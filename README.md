@@ -1,6 +1,7 @@
 # Smiley Manager
 
-###### Version: 1.3 hotfix
+###### This version is still in development, therefore I do not recommend you run beta/unsupported software in production.
+###### Stable version can be download from http://xenforo.com/community/resources/smiley-manager.2538/
 
 ## About:
 Smiley Manager is a useful tool for smilies management that help you group them into categories.​

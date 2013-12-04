@@ -6,7 +6,6 @@ class Milano_Common_Install
 	protected static $existingAddOn;
 	protected static $addOnData;
 
-	protected static $_fieldNameChanges;
 	protected static $_tables;
 	protected static $_tableChanges;
 	protected static $_userFields;
@@ -16,6 +15,8 @@ class Milano_Common_Install
 	protected static $_uniqueKeys;
 	protected static $_keys;
 	protected static $_fields;
+
+	protected static $_noUninstall = false;
 
 	protected static function _construct($existingAddOn = null, $addOnData  = null)
 	{
@@ -55,34 +56,53 @@ class Milano_Common_Install
 		self::_getDb()->beginTransaction();
 		static::_preInstall();
 
+		$fieldNameChanges = static::getInstallFieldNameChanges();
+		if (!empty($fieldNameChanges))
+		{
+			self::makeFieldChanges($fieldNameChanges);
+		}
+
+		$tableNameChanges = static::getInstallTableNameChanges();
+		if (!empty($tableNameChanges))
+		{
+			self::renameTables($tableNameChanges);
+		}
+
 		if (!empty(self::$_tables))
 		{
 			self::createTables(self::$_tables);
 		}
+
 		if (!empty(self::$_tableChanges))
 		{
 			self::alterTables(self::$_tableChanges);
 		}
+
 		if (!empty(self::$_userFields))
 		{
 			self::createUserFields(self::$_userFields);
 		}
+
 		if (!empty(self::$_contentTypeFields))
 		{
 			self::insertContentTypeFields(self::$_contentTypeFields);
 		}
+
 		if (!empty(self::$_contentTypes) || !empty(self::$_contentTypeFields))
 		{
 			self::insertContentTypes(self::$_contentTypes);
 		}
+
 		if (!empty(self::$_primaryKeys))
 		{
 			self::addPrimaryKeys(self::$_primaryKeys);
 		}
+
 		if (!empty(self::$_uniqueKeys))
 		{
 			self::addUniqueKeys(self::$_uniqueKeys);
 		}
+
 		if (!empty(self::$_keys))
 		{
 			self::addKeys(self::$_keys);
@@ -95,28 +115,49 @@ class Milano_Common_Install
 
 	public static final function uninstall()
 	{
+		if (self::$_noUninstall)
+		{
+			return;
+		}
+
 		self::_construct();
 
 		static::_preUninstallBeforeTransaction();
 		self::_getDb()->beginTransaction();
 		static::_preUninstall();
 
+		$fieldNameChanges = static::getUninstallFieldNameChanges();
+		if (!empty($fieldNameChanges))
+		{
+			self::makeFieldChanges($fieldNameChanges);
+		}
+
+		$tableNameChanges = static::getUninstallTableNameChanges();
+		if (!empty($tableNameChanges))
+		{
+			self::renameTables($tableNameChanges);
+		}
+
 		if (!empty(self::$_tables))
 		{
 			self::dropTables(self::$_tables);
 		}
+
 		if (!empty(self::$_tableChanges))
 		{
 			self::dropTableChanges(self::$_tableChanges);
 		}
+
 		if (!empty(self::$_userFields))
 		{
 			self::dropUserFields(self::$_userFields);
 		}
+
 		if (!empty(self::$_contentTypeFields))
 		{
 			self::deleteContentTypeFields(self::$_contentTypeFields);
 		}
+
 		if (!empty(self::$_contentTypes) || !empty(self::$_contentTypeFields))
 		{
 			self::deleteContentTypes(self::$_contentTypes);
@@ -127,7 +168,14 @@ class Milano_Common_Install
 		static::_postUninstallAfterTransaction();
 	}
 
-	public static function checkIfFieldExist($table, $field)
+	public static final function isAddOnInstalled($addOnId)
+    {
+        $addOnModel = XenForo_Model::create('XenForo_Model_AddOn');
+
+        return ($addOnModel->getAddOnById($addOnId));
+    }
+
+	public static final function isFieldExists($table, $field)
 	{
 		try
 		{
@@ -136,7 +184,7 @@ class Milano_Common_Install
 		catch (Zend_Db_Exception $e) {}
 	}
 	
-	public static function checkIfTableExist($table)
+	public static final function isTableExists($table)
 	{
 		try 
 		{
@@ -145,18 +193,82 @@ class Milano_Common_Install
 		catch (Zend_Db_Exception $e) {}
 	}
 
+	public static function makeFieldChanges(array $fieldChanges)
+    {
+        foreach ($fieldChanges as $tableName => $tableSql) 
+        {
+            if (self::isTableExists($tableName)) 
+            {
+                $describeTable = self::_getDb()->describeTable($tableName);
+                $keys = array_keys($describeTable);
+                $sql = "ALTER TABLE `" . $tableName . "` ";
+                $sqlAdd = array();
+                foreach ($tableSql as $oldFieldName => $newField) 
+                {
+                    if (in_array($oldFieldName, $keys)) 
+                    {
+                        $sqlAdd[] = "CHANGE `" . $oldFieldName . "` " . $newField;
+                    }
+                }
+                $sql .= implode(", ", $sqlAdd);
+                try
+				{
+					self::_getDb()->query($sql);
+				}
+				catch (Zend_Db_Exception $e) {}
+            }
+        }
+    }
+
+    public static function renameTables(array $tableNameChanges)
+    {
+        foreach ($tableNameChanges as $oldTableName => $newTableName) 
+        {
+            if (self::isTableExists($oldTableName)) 
+            {
+                if (!self::isTableExists($newTableName)) 
+                {
+                    $sql = "RENAME TABLE `" . $oldTableName . "` TO `" . $newTableName . "`";
+                } 
+                else 
+                {
+                    $sql = "DROP TABLE `" . $oldTableName . "`";
+                }
+                try
+				{
+					self::_getDb()->query($sql);
+				}
+				catch (Zend_Db_Exception $e) {}
+            }
+        }
+    }
+
 	public static function createTables(array $tables)
 	{
 		foreach ($tables AS $tableName => $tableSql)
 		{
-			if (!self::checkIfTableExist($tableName))
+			if (!self::isTableExists($tableName))
 			{
+				/*$sql = "CREATE TABLE IF NOT EXISTS `" . $tableName . "` (";
+                $sqlRows = array();
+                foreach ($tableSql as $rowName => $rowParams) 
+                {
+                    $sqlRows[] = "`" . $rowName . "` " . $rowParams;
+                }
+                $sql .= implode(",", $sqlRows);
+                $sql .= ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";*/
 				try
 				{
+					//self::_getDb()->query($sql);
 					self::_getDb()->query("CREATE TABLE IF NOT EXISTS `" . $tableName . "` (" . $tableSql . ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci");
 				}
 				catch (Zend_Db_Exception $e) {}
 			}
+			/*else 
+			{
+                $tableChanges = array($tableName => $tableSql);
+                self::alterTables($tableChanges);
+            }*/
 		}
 	}
 
@@ -164,24 +276,19 @@ class Milano_Common_Install
 	{
 		foreach ($tables AS $tableName => $tableSql)
 		{
-			self::dropTable($tableName);
+			try 
+			{
+				self::_getDb()->query("DROP TABLE IF EXISTS `" . $tableName . "` "); 
+			}
+			catch (Zend_Db_Exception $e) {}
 		}
-	}
-
-	public static function dropTable($table)
-	{
-		try 
-		{
-			self::_getDb()->query("DROP TABLE IF EXISTS `" . $table . "` "); 
-		}
-		catch (Zend_Db_Exception $e) {}
 	}
 
 	public static function alterTables(array $tables)
 	{
 		foreach ($tables AS $tableName => $tableSql)
 		{
-			if (self::checkIfTableExist($tableName))
+			if (self::isTableExists($tableName))
 			{
 				$describeTable = self::_getDb()->describeTable($tableName);
 				$keys = array_keys($describeTable);
@@ -192,7 +299,7 @@ class Milano_Common_Install
 				{
 					if (strpos($rowParams, 'PRIMARY KEY') !== false)
 					{
-						if ($this->_getExistingPrimaryKeys($tableName))
+						if (self::_getExistingPrimaryKeys($tableName))
 						{
 							$sqlQuery[] = "DROP PRIMARY KEY ";
 						}
@@ -220,7 +327,7 @@ class Milano_Common_Install
 
 	public static function alterTable($table, $field, $action = 'drop', $attr = NULL, $after = NULL)
 	{
-		$exists = self::checkIfFieldExist($table, $field);
+		$exists = self::isFieldExists($table, $field);
 		$action = strtolower($action);
 
 		if ($action == 'drop') 
@@ -339,15 +446,24 @@ class Milano_Common_Install
 
 	public static function getExistingKeys($tableName)
 	{
-		$columns = self::_getDb()->describeTable($tableName);
-		
-		$indexes = self::_getDb()->fetchAll('SHOW INDEXES FROM  `'.$tableName.'`');
-		
 		$keys = array();
-		foreach ($indexes as $index)
+
+		if (self::isTableExists($tableName))
 		{
-			$keys[$index['Key_name']] = $index;
-		}
+			$columns = self::_getDb()->describeTable($tableName);	
+			$indexes = self::_getDb()->fetchAll('SHOW INDEXES FROM  `'.$tableName.'`');
+
+			foreach ($indexes as $index) 
+			{
+	            if (!isset($keys[$index['Key_name']])) 
+	            {
+	                    $keys[$index['Key_name']] = $index;
+	            }
+	            
+	            $keys[$index['Key_name']]['Column_names'][] = $index['Column_name'];
+	        }
+	    }
+
 		return $keys;
 	}
 	
@@ -472,6 +588,26 @@ class Milano_Common_Install
 		}
 	}
 	
+	public static function getInstallFieldNameChanges()
+	{
+		return array();
+	}
+
+	public static function getUninstallFieldNameChanges()
+	{
+		return array();
+	}
+
+	public static function getInstallTableNameChanges()
+	{
+		return array();
+	}
+
+	public static function getUninstallTableNameChanges()
+	{
+		return array();
+	}
+
 	public static function getTables()
 	{
 		return array();
@@ -542,14 +678,5 @@ class Milano_Common_Install
 
 	protected static function _postUninstallAfterTransaction()
 	{
-	}
-
-	public static function test($mess = '')
-	{
-		if ($mess === '')
-		{
-			$mess = 'test';
-		}
-		print_r($mess);die();
 	}
 }
