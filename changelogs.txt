@@ -26,4 +26,8 @@ Smiley Manager Change Logs:
 	Minor improvements.
 
 - Version 1.0.3 hotfix - 20/11/2013
-	Fixed error with post as guest.
+	Fixed error with Quickload Smiley mode.
+
+- Version 1.1.0 - ?
+	Added Bulk Add smilies.
+	Minor improvements.

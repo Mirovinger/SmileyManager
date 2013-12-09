@@ -27,11 +27,6 @@ class Milano_SmileyManager_ControllerAdmin_Category extends XenForo_ControllerAd
 
 		if ($this->isConfirmedPost())
 		{
-
-			/*$input = $this->_input->filter(array(
-				'smilie_category_id' => XenForo_Input::UINT,
-				'order' => XenForo_Input::STRING
-			));*/
 			$orderInput = $this->_input->filterSingle('order', XenForo_Input::STRING);
 
 			$order = explode(',', $orderInput);

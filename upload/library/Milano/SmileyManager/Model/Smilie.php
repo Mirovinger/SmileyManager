@@ -222,6 +222,10 @@ class Milano_SmileyManager_Model_Smilie extends XFCP_Milano_SmileyManager_Model_
         	{
         		if (!$this->getSmiliesByText($smilie['smilie_text']))
         		{
+        			$smilie = array_merge(array(
+        				'sprite_mode' => 0,
+        				'sprite_params' => array()
+        			), $smilie);
 	        		$dw = XenForo_DataWriter::create('XenForo_DataWriter_Smilie');
 	        		$dw->setOption(Milano_SmileyManager_DataWriter_Smilie::OPTION_REBUILD_CATEGORY_CACHE, false);
 	            	$dw->bulkSet($smilie);
@@ -254,6 +258,7 @@ class Milano_SmileyManager_Model_Smilie extends XFCP_Milano_SmileyManager_Model_
         XenForo_Db::commit($db);
 
         $this->_getCategoryModel()->rebuildCategories();
+        $this->_getCategoryModel()->updateSmilieCount($categoryId);
     }
 
     public function deleteSmiliesInCategory($categoryId)
@@ -433,6 +438,11 @@ class Milano_SmileyManager_Model_Smilie extends XFCP_Milano_SmileyManager_Model_
 
 			$rootNode->appendChild($smilieNode);
 		}
+	}
+
+	public function getImagesFromDirectory($directory)
+	{
+		return Milano_Common_File::getFilesFromDirectory($directory, array('jpg', 'png', 'gif', 'jpeg'));
 	}
 
     protected function _getCategoryModel()
