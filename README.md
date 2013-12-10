@@ -1,6 +1,8 @@
 # Smiley Manager
 
-###### This version is still in development, therefore I do not recommend you run beta/unsupported software in production.
+### Version 1.1.0 build 2.12102013
+
+###### This version is still in development, thus I do not recommend you run beta/unsupported software in production.
 ###### Stable version can be downloaded from http://xenforo.com/community/resources/smiley-manager.2538/
 
 ## About:
@@ -9,6 +11,7 @@ Smiley Manager is a useful tool for smilies management that help you group them 
 ## Features:
  * Add smilie categories.
  * Batch update smilies to category.
+ * Bulk add smilies.
  * Display smilies with tab in the editor.
  * Smiley import and export.
  * Smiley display order.
@@ -18,6 +21,10 @@ Smiley Manager is a useful tool for smilies management that help you group them 
  * Download the zip file.
  * Upload files and directories from the upload folder to your XenForo's root directory.
  * Import the .xml file via the Admin CP.
+
+## Credits:
+ * [Sprite Cow](http://www.spritecow.com/) by Jake Archibald.
+ * [jquery sortable](http://johnny.github.io/jquery-sortable/) by johnny.
 
 ## Like This Addon?
 Simply leave a review and tell me how much you like it. If you appreciate the work, please [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DQPEKAAP2QSZ8).
