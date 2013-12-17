@@ -22,6 +22,7 @@
 		},
 	};
 
+	//XenForo.SmileySpriteCow = 
 	XenForo.SpriteCow = function($container) { this.__construct($container); };
 	XenForo.SpriteCow.prototype =
 	{
@@ -47,6 +48,7 @@
 			toolbarTop.
 				addItem('add-smiley', XenForo.phrases.add_smiley).
 				addItem('reload-img', XenForo.phrases.reload_current_image, {noLabel: true}).
+				//addItem('select-sprite', XenForo.phrases.select_sprite, {active: true}).
 				addItem(
 					new spriteCow.ToolbarGroup().
 						addItem('select-sprite', XenForo.phrases.select_sprite, {active: true}).

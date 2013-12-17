@@ -1,1 +1,55 @@
-!function(a){XenForo.FilterModItem=function(a){this.__construct(a)},XenForo.FilterModItem.prototype={__construct:function(b){this.$form=b.closest("form"),this.$ctrl=b,this.$target=b.closest("li"),this.$ctrl.bind({change:a.context(this,"setStyle")}),this.setStyle()},setState:function(){this.setStyle()},setStyle:function(){this.$ctrl.is(":checked")?this.$target.addClass("Last"):this.$target.removeClass("Last")}},XenForo.register(".FilterModCheck input:checkbox","XenForo.FilterModItem")}(jQuery,this,document),$.propHooks.checked={set:function(a,b,c){var d=a[c]=b;return $(a).trigger("change"),d}};
+!function($, window, document, _undefined)
+{
+	XenForo.FilterModItem = function($ctrl) { this.__construct($ctrl); };
+	XenForo.FilterModItem.prototype =
+	{
+		__construct: function($ctrl)
+		{
+			this.$form = $ctrl.closest('form');
+			this.$ctrl = $ctrl;
+			this.$target = $ctrl.closest('li');
+
+			this.$ctrl.bind(
+			{
+				change: $.context(this, 'setStyle'),
+			});
+
+			this.setStyle();
+		},
+
+		/**
+		 * Alter the style of the target based on checkbox state
+		 */
+		setStyle: function()
+		{
+			if (this.$ctrl.is(':checked'))
+			{
+				this.$target.addClass('Last');
+			}
+			else
+			{
+				this.$target.removeClass('Last');
+			}
+		},
+	};
+
+	// *********************************************************************
+
+	XenForo.register('.FilterModCheck input:checkbox', 'XenForo.FilterModItem');
+
+}
+(jQuery, this, document);
+
+
+/**
+ * This is a dirty fix for XenForo.CheckAll function 
+ * We have to trigger change event when the checboxes are 
+ * checked by CheckAll checkbox
+ */
+$.propHooks.checked = {
+	set: function(elem, value, name) {
+    	var ret = (elem[ name ] = value);
+    	$(elem).trigger("change");
+    	return ret;
+  	}
+};

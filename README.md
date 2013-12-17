@@ -1,6 +1,6 @@
 # Smiley Manager
 
-### Version 1.1.0 build 2.12102013
+### Version 1.1.0 build 3.17122013
 
 ###### This version is still in development, thus I do not recommend you run beta/unsupported software in production.
 ###### Stable version can be downloaded from http://xenforo.com/community/resources/smiley-manager.2538/

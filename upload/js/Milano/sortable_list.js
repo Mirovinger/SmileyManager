@@ -1,4 +1,123 @@
-!function(a){XenForo.SortableList=function(a){this.__construct(a)},XenForo.SortableList.prototype={__construct:function(b){this.$form=b.closest("form").bind("AutoValidationComplete",a.context(this,"formAutoValidationComplete")),this.$submit=this.$form.find('input[type="submit"]').hide(),$handle="."+String(b.data("handle")||"handle"),this.stackAlert=String(b.data("stackalert")||""),this.$list=b.sortable({handle:$handle,onDrag:a.context(this,"onDrag"),onDragStart:a.context(this,"onDragStart"),onDrop:a.context(this,"onDrop"),serialize:a.context(this,"serialize")})},onDrop:function(a,b,c){this.$submit.xfFadeIn(XenForo.speed.slow),c(a,b)},onDragStart:function(a,b,c){var d=a.offset(),e=b.rootGroup.pointer;adjustment={left:e.left-d.left,top:e.top-d.top},c(a,b)},onDrag:function(a,b){a.css({position:"absolute",opacity:.5,left:b.left-adjustment.left,top:b.top-adjustment.top})},serialize:function(a,b,c){return c?b.join():parseInt(a.attr("id").replace(/[^\d]/g,""))},formAutoValidationComplete:function(b){b.preventDefault();var c=this.$list.sortable("serialize").get(0);stackAlert=this.stackAlert,redirect=this.$form.data("redirect"),serialized=this.$form.serializeArray(),serialized.push({name:"order",value:c}),""!=stackAlert&&(message=setTimeout(function(){XenForo.stackAlert(stackAlert)},1e4)),XenForo.ajax(this.$form.attr("action"),serialized,function(b){XenForo.hasResponseError(b)||($container=a("#StackAlerts"),$container.length&&$container.xfFadeUp(XenForo.speed.slow,function(){a(this).empty().remove()}),""!=stackAlert&&clearTimeout(message),XenForo.alert(b._redirectMessage,"",2500))})}},XenForo.register(".SortableList","XenForo.SortableList")}(jQuery,this,document);
+!function($, window, document, _undefined)
+{
+	XenForo.SortableList = function($list) { this.__construct($list); };
+	XenForo.SortableList.prototype =
+	{
+		__construct: function($list)
+		{
+			this.$form = $list.closest('form').bind('AutoValidationComplete', $.context(this, 'formAutoValidationComplete'));
+			this.$submit = this.$form.find('input[type="submit"]').hide();
+			$handle = '.' + String($list.data('handle') || 'handle');
+			this.stackAlert = String($list.data('stackalert') || '');
+
+			this.$list = $list.sortable({
+				handle: $handle,
+				onDrag: $.context(this, 'onDrag'),
+				onDragStart: $.context(this, 'onDragStart'),
+				onDrop: $.context(this, 'onDrop'),
+				serialize: $.context(this, 'serialize'),
+			});
+
+			var adjustment;
+		},
+
+		onDrop: function(item, container, _super) 
+		{
+
+			this.$submit.xfFadeIn(XenForo.speed.slow);
+			_super(item, container);
+		},
+
+		onDragStart: function($item, container, _super) 
+		{
+		    var offset = $item.offset(),
+		    	pointer = container.rootGroup.pointer
+
+		    adjustment = {
+		    	left: pointer.left - offset.left,
+		    	top: pointer.top - offset.top
+		    }
+
+		    _super($item, container);
+		},
+
+		onDrag: function($item, position) 
+		{
+		    $item.css({
+		    	position: 'absolute',
+		    	opacity: 0.5,
+		    	left: position.left - adjustment.left,
+		    	top: position.top - adjustment.top
+		    });
+		},
+
+		serialize: function (parent, children, isContainer) 
+		{
+    		return isContainer ? children.join() : parseInt(parent.attr('id').replace(/[^\d]/g, ''));
+  		},
+
+		formAutoValidationComplete: function(e)
+		{
+			e.preventDefault();
+			var order = (this.$list.sortable('serialize').get(0));
+			stackAlert = this.stackAlert;
+			redirect = this.$form.data('redirect');
+			serialized = this.$form.serializeArray();
+
+			serialized.push(
+			{
+				name: 'order',
+				value: order
+			});
+			
+			if (stackAlert != '')
+			{
+				message = setTimeout(function() {
+		      		XenForo.stackAlert(stackAlert);
+				}, 10 * 1000);
+			}
+
+			XenForo.ajax
+			(
+				this.$form.attr('action'),
+				serialized,
+				function(ajaxData, textStatus)
+				{
+					if (XenForo.hasResponseError(ajaxData))
+					{
+						return;
+					}
+
+					//this.$submit.xfFadeOut(XenForo.speed.normal);
+					$container = $('#StackAlerts');
+					if ($container.length)
+					{
+						$container.xfFadeUp(XenForo.speed.slow, function()
+						{
+							$(this).empty().remove();
+						});
+					}
+					if (stackAlert != '')
+					{
+						clearTimeout(message);
+					}
+
+					XenForo.alert(ajaxData._redirectMessage, '', 2500);
+					if (XenForo.isPositive(redirect))
+					{
+						return XenForo.redirect(ajaxData._redirectTarget);
+					}
+				}
+			);
+		},
+	};
+
+	// *********************************************************************
+
+	XenForo.register('.SortableList', 'XenForo.SortableList');
+
+}
+(jQuery, this, document);
 
 /* 
  *  jquery-sortable.js v0.9.11
