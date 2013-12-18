@@ -112,7 +112,6 @@ class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyMana
 
 	public function actionBulkAdd()
 	{
-		//$type = $this->_input->filterSingle('type', XenForo_Input::STRING);
 		$input = $this->_input->filter(array(
 			'data_source' => XenForo_Input::STRING,
 			'type' => XenForo_Input::STRING

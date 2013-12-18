@@ -3,6 +3,7 @@
 class Milano_SmileyManager_DataWriter_Smilie extends XFCP_Milano_SmileyManager_DataWriter_Smilie
 {
 	const OPTION_REBUILD_CATEGORY_CACHE = 'rebuildCategoryCache';
+	const OPTION_REBUILD_DISPLAY_ORDER = 'rebuildDisplayOrder';
 
 	protected function _getFields() 
 	{
@@ -23,7 +24,8 @@ class Milano_SmileyManager_DataWriter_Smilie extends XFCP_Milano_SmileyManager_D
 	protected function _getDefaultOptions()
     {
         return array(
-            self::OPTION_REBUILD_CATEGORY_CACHE => true
+            self::OPTION_REBUILD_CATEGORY_CACHE => true,
+            self::OPTION_REBUILD_DISPLAY_ORDER => false
         );
     }
 
@@ -50,6 +52,33 @@ class Milano_SmileyManager_DataWriter_Smilie extends XFCP_Milano_SmileyManager_D
 		if ($this->getOption(self::OPTION_REBUILD_CATEGORY_CACHE))
 		{
 			$this->_getCategoryModel()->rebuildCategories();
+		}
+
+		if ($this->getOption(self::OPTION_REBUILD_DISPLAY_ORDER))
+		{
+			if ($this->isChanged('smilie_display_order'))
+			{
+				if ($this->getExisting('smilie_display_order') < $this->get('smilie_display_order'))
+				{
+					$this->_db->query('
+						UPDATE xf_smilie 
+						SET smilie_display_order = smilie_display_order - 1 
+						WHERE smilie_category_id = ' . $this->get('smilie_category_id') . ' 
+							AND smilie_id <> ' . $this->get('smilie_id') . ' 
+							AND smilie_display_order > ' . $this->getExisting('smilie_display_order') . ' 
+							AND smilie_display_order <= ' . $this->get('smilie_display_order'));
+				}
+				else
+				{
+					$this->_db->query('
+						UPDATE xf_smilie 
+						SET smilie_display_order = smilie_display_order + 1 
+						WHERE smilie_category_id = ' . $this->get('smilie_category_id') . ' 
+							AND smilie_id <> ' . $this->get('smilie_id') . ' 
+							AND smilie_display_order < ' . $this->getExisting('smilie_display_order') . ' 
+							AND smilie_display_order >= ' . $this->get('smilie_display_order'));
+				}
+			}
 		}
 	}
 

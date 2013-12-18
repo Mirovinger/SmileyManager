@@ -5,10 +5,8 @@
 	{
 		__construct: function($list)
 		{
-			this.$form = $list.closest('form').bind('AutoValidationComplete', $.context(this, 'formAutoValidationComplete'));
-			this.$submit = this.$form.find('input[type="submit"]').hide();
+			this.$form = $list.closest('form');
 			$handle = '.' + String($list.data('handle') || 'handle');
-			this.stackAlert = String($list.data('stackalert') || '');
 
 			this.$list = $list.sortable({
 				handle: $handle,
@@ -23,8 +21,7 @@
 
 		onDrop: function(item, container, _super) 
 		{
-
-			this.$submit.xfFadeIn(XenForo.speed.slow);
+			this.saveOnDrop(parseInt(item.attr('id').replace(/[^\d]/g, '')));
 			_super(item, container);
 		},
 
@@ -56,26 +53,21 @@
     		return isContainer ? children.join() : parseInt(parent.attr('id').replace(/[^\d]/g, ''));
   		},
 
-		formAutoValidationComplete: function(e)
-		{
-			e.preventDefault();
-			var order = (this.$list.sortable('serialize').get(0));
-			stackAlert = this.stackAlert;
-			redirect = this.$form.data('redirect');
-			serialized = this.$form.serializeArray();
+  		saveOnDrop: function(id)
+  		{
+  			var order = (this.$list.sortable('serialize').get(0));
+
+  			serialized = this.$form.serializeArray();
 
 			serialized.push(
 			{
 				name: 'order',
 				value: order
-			});
-			
-			if (stackAlert != '')
+			},
 			{
-				message = setTimeout(function() {
-		      		XenForo.stackAlert(stackAlert);
-				}, 10 * 1000);
-			}
+				name: 'smilie_id',
+				value: id
+			});
 
 			XenForo.ajax
 			(
@@ -88,28 +80,10 @@
 						return;
 					}
 
-					//this.$submit.xfFadeOut(XenForo.speed.normal);
-					$container = $('#StackAlerts');
-					if ($container.length)
-					{
-						$container.xfFadeUp(XenForo.speed.slow, function()
-						{
-							$(this).empty().remove();
-						});
-					}
-					if (stackAlert != '')
-					{
-						clearTimeout(message);
-					}
-
 					XenForo.alert(ajaxData._redirectMessage, '', 2500);
-					if (XenForo.isPositive(redirect))
-					{
-						return XenForo.redirect(ajaxData._redirectTarget);
-					}
 				}
 			);
-		},
+  		},
 	};
 
 	// *********************************************************************

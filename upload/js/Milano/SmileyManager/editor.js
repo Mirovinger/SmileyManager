@@ -7,8 +7,7 @@
 	{
 		init: function()
 		{
-			var bbCode = XenForo.BbCodeWysiwygEditor.prototype,
-				self = this;
+			var self = this;
 			
 			smileyLoaded = false;
 
@@ -36,7 +35,6 @@
 				}
 			};
 
-			//$textarea.data('options', $.extend(redactorOptions, myOptions));
 			$.extend(true, redactorOptions, myOptions);
 		},
 	};
