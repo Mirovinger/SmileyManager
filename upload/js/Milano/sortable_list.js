@@ -55,6 +55,11 @@
 
   		saveOnDrop: function(id)
   		{
+  			if (!id || id === undefined)
+  			{
+  				return;
+  			}
+  			
   			var order = (this.$list.sortable('serialize').get(0));
 
   			serialized = this.$form.serializeArray();
