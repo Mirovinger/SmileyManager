@@ -45,4 +45,12 @@ class Milano_SmileyManager_Listener
         	}
         }
     }
+
+    public static function editorSetup(XenForo_View $view, $formCtrlName, &$message, array &$editorOptions, &$showWysiwyg)
+    {
+        if ($showWysiwyg)
+        {
+        	$editorOptions['json']['editorOptions']['plugins'][] = 'SmileyManager';
+        }
+    }
 }
