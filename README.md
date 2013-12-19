@@ -31,4 +31,4 @@ Smiley Manager is a useful tool for smilies management that help you group them 
 Simply leave a review and tell me how much you like it. If you appreciate the work, please [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DQPEKAAP2QSZ8).
 
 ## Support and feature request
-Please visit [Smiley Manager](http://xenforo.com/community/resources/smiley-manager.2538/) at [XenForo](http://xenforo.com/community) for more information
+Please visit [Smiley Manager](http://xenforo.com/community/threads/smiley-manager.63098/) at [XenForo](http://xenforo.com/community) for more information
