@@ -1,7 +1,5 @@
 # Smiley Manager
 
-### Version 1.1.1 build 1.18122013
-
 ###### This version is still in development, thus I do not recommend you run beta/unsupported software in production.
 ###### Stable version can be downloaded from http://xenforo.com/community/resources/smiley-manager.2538/
 
@@ -21,6 +19,9 @@ Smiley Manager is a useful tool for smilies management that help you group them 
  * Download the zip file.
  * Upload files and directories from the upload folder to your XenForo's root directory.
  * Import the .xml file via the Admin CP.
+
+## Changelogs
+ * http://xenforo.com/community/resources/smiley-manager.2538/updates
 
 ## Credits:
  * [Sprite Cow](http://www.spritecow.com/) by Jake Archibald.
