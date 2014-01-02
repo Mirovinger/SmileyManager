@@ -28,14 +28,14 @@ class Milano_Common_Install
 		self::$existingAddOn = $existingAddOn;
 		self::$addOnData = $addOnData;
 
-		self::$_tables = static::getTables();
-		self::$_tableChanges = static::getTableChanges();
-		self::$_userFields = static::getUserFields();
-		self::$_contentTypes = static::getContentTypes();
-		self::$_contentTypeFields = static::getContentTypeFields();
-		self::$_primaryKeys = static::getPrimaryKeys();
-		self::$_uniqueKeys = static::getUniqueKeys();
-		self::$_keys = static::getKeys();
+		self::$_tables = static::_getTables();
+		self::$_tableChanges = static::_getTableChanges();
+		self::$_userFields = static::_getUserFields();
+		self::$_contentTypes = static::_getContentTypes();
+		self::$_contentTypeFields = static::_getContentTypeFields();
+		self::$_primaryKeys = static::_getPrimaryKeys();
+		self::$_uniqueKeys = static::_getUniqueKeys();
+		self::$_keys = static::_getKeys();
 	}
 
 	protected static function _getDb()
@@ -56,13 +56,13 @@ class Milano_Common_Install
 		self::_getDb()->beginTransaction();
 		static::_preInstall();
 
-		$fieldNameChanges = static::getInstallFieldNameChanges();
+		$fieldNameChanges = static::_getInstallFieldNameChanges();
 		if (!empty($fieldNameChanges))
 		{
 			self::makeFieldChanges($fieldNameChanges);
 		}
 
-		$tableNameChanges = static::getInstallTableNameChanges();
+		$tableNameChanges = static::_getInstallTableNameChanges();
 		if (!empty($tableNameChanges))
 		{
 			self::renameTables($tableNameChanges);
@@ -126,13 +126,13 @@ class Milano_Common_Install
 		self::_getDb()->beginTransaction();
 		static::_preUninstall();
 
-		$fieldNameChanges = static::getUninstallFieldNameChanges();
+		$fieldNameChanges = static::_getUninstallFieldNameChanges();
 		if (!empty($fieldNameChanges))
 		{
 			self::makeFieldChanges($fieldNameChanges);
 		}
 
-		$tableNameChanges = static::getUninstallTableNameChanges();
+		$tableNameChanges = static::_getUninstallTableNameChanges();
 		if (!empty($tableNameChanges))
 		{
 			self::renameTables($tableNameChanges);
@@ -249,26 +249,33 @@ class Milano_Common_Install
 		{
 			if (!self::isTableExists($tableName))
 			{
-				/*$sql = "CREATE TABLE IF NOT EXISTS `" . $tableName . "` (";
+				$sql = "CREATE TABLE IF NOT EXISTS `" . $tableName . "` (";
                 $sqlRows = array();
                 foreach ($tableSql as $rowName => $rowParams) 
                 {
-                    $sqlRows[] = "`" . $rowName . "` " . $rowParams;
+                	if ($rowName !== 'EXTRA')
+                	{
+                    	$sqlRows[] = "`" . $rowName . "` " . $rowParams;
+                	}
+                }
+                if (!empty($tableSql['EXTRA']))
+                {
+                	$sqlRows[] = $tableSql['EXTRA'];
                 }
                 $sql .= implode(",", $sqlRows);
-                $sql .= ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";*/
+                $sql .= ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";
 				try
 				{
-					//self::_getDb()->query($sql);
-					self::_getDb()->query("CREATE TABLE IF NOT EXISTS `" . $tableName . "` (" . $tableSql . ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci");
+					self::_getDb()->query($sql);
+					//self::_getDb()->query("CREATE TABLE IF NOT EXISTS `" . $tableName . "` (" . $tableSql . ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci");
 				}
 				catch (Zend_Db_Exception $e) {}
 			}
-			/*else 
+			else 
 			{
                 $tableChanges = array($tableName => $tableSql);
                 self::alterTables($tableChanges);
-            }*/
+            }
 		}
 	}
 
@@ -299,7 +306,7 @@ class Milano_Common_Install
 				{
 					if (strpos($rowParams, 'PRIMARY KEY') !== false)
 					{
-						if (self::_getExistingPrimaryKeys($tableName))
+						if (self::getExistingPrimaryKeys($tableName))
 						{
 							$sqlQuery[] = "DROP PRIMARY KEY ";
 						}
@@ -588,62 +595,62 @@ class Milano_Common_Install
 		}
 	}
 	
-	public static function getInstallFieldNameChanges()
+	protected static function _getInstallFieldNameChanges()
 	{
 		return array();
 	}
 
-	public static function getUninstallFieldNameChanges()
+	protected static function _getUninstallFieldNameChanges()
 	{
 		return array();
 	}
 
-	public static function getInstallTableNameChanges()
+	protected static function _getInstallTableNameChanges()
 	{
 		return array();
 	}
 
-	public static function getUninstallTableNameChanges()
+	protected static function _getUninstallTableNameChanges()
 	{
 		return array();
 	}
 
-	public static function getTables()
+	protected static function _getTables()
 	{
 		return array();
 	}
 	
-	public static function getTableChanges()
+	protected static function _getTableChanges()
 	{
 		return array();
 	}
 	
-	public static function getContentTypes()
+	protected static function _getContentTypes()
 	{
 		return array();
 	}
 	
-	public static function getContentTypeFields()
+	protected static function _getContentTypeFields()
 	{
 		return array();
 	}
 	
-	public static function getUserFields()
+	protected static function _getUserFields()
 	{
 		return array();
 	}
 	
-	public static function getPrimaryKeys()
+	protected static function _getPrimaryKeys()
 	{
 		return array();
 	}
 
-	public static function getUniqueKeys()
+	protected static function _getUniqueKeys()
 	{
 		return array();
 	}
 	
-	public static function getKeys()
+	protected static function _getKeys()
 	{
 		return array();
 	}

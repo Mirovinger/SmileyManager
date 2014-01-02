@@ -59,9 +59,8 @@
   			{
   				return;
   			}
-  			
-  			var order = (this.$list.sortable('serialize').get(0));
 
+  			var order = (this.$list.sortable('serialize').get(0));
   			serialized = this.$form.serializeArray();
 
 			serialized.push(
@@ -88,7 +87,7 @@
 					XenForo.alert(ajaxData._redirectMessage, '', 2500);
 				}
 			);
-  		},
+  		}
 	};
 
 	// *********************************************************************

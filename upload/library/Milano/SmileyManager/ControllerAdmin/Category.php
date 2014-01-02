@@ -32,6 +32,29 @@ class Milano_SmileyManager_ControllerAdmin_Category extends XenForo_ControllerAd
 
 			$order = explode(',', $orderInput);
 
+			/*$db = XenForo_Application::get('db');
+    		XenForo_Db::beginTransaction($db);
+
+			$start = microtime(true);
+			$limit = 60;
+
+			if ($order)
+			{
+				foreach ($order as $key => $smilieId) 
+				{
+					$dw = XenForo_DataWriter::create('XenForo_DataWriter_Smilie', XenForo_DataWriter::ERROR_SILENT);
+		        	$dw->setOption(Milano_SmileyManager_DataWriter_Smilie::OPTION_REBUILD_CATEGORY_CACHE, false);
+		            $dw->setExistingData($smilieId);
+		            $dw->set('smilie_display_order', $key + 1);
+
+		            $dw->save();
+
+		            if ($limit && microtime(true) - $start > $limit)
+					{
+						break;
+					}
+				}
+			}*/
 			if ($order)
 			{
 				$displayOrder = array_search($smilieId, $order);
@@ -43,6 +66,8 @@ class Milano_SmileyManager_ControllerAdmin_Category extends XenForo_ControllerAd
 	        
 	            $dw->save();
 			}
+
+			//XenForo_Db::commit($db);
 
 			return $this->responseRedirect(
 				XenForo_ControllerResponse_Redirect::SUCCESS,

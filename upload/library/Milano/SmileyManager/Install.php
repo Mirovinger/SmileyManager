@@ -2,31 +2,32 @@
 
 class Milano_SmileyManager_Install extends Milano_Common_Install
 {
-	public static function getTables()
+	protected static function _getTables()
 	{
 		$data = array();
 
-		$data['smilie_category'] = "
+		/*$data['smilie_category'] = "
 			`smilie_category_id` int(10) unsigned NOT NULL auto_increment,
 			`category_title` varchar(100) NOT NULL,
 			`display_order` int(10) unsigned NOT NULL default '0',
 			smilie_count int(10) unsigned NOT NULL default '0',
 			`active` TINYINT(3) UNSIGNED NOT NULL default '0',
 			PRIMARY KEY  (`smilie_category_id`)
-		";
+		";*/
 
-		/*$data['smilie_category'] = array(
-			'smilie_category_id' => 'int(10) unsigned NOT NULL auto_increment PRIMARY KEY',
+		$data['smilie_category'] = array(
+			'smilie_category_id' => 'int(10) unsigned NOT NULL auto_increment',
 			'category_title' => 'varchar(100) NOT NULL',
 			'display_order' => "int(10) unsigned NOT NULL default '0'",
 			'smilie_count' => "int(10) unsigned NOT NULL default '0'",
 			'active' => "TINYINT(3) UNSIGNED NOT NULL default '0'",
-		);*/
+			'EXTRA' => 'PRIMARY KEY (`smilie_category_id`)'
+		);
 
 		return $data;
 	}
 
-	public static function getTableChanges()
+	protected static function _getTableChanges()
 	{
 		$data = array();
 

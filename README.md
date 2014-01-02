@@ -1,6 +1,6 @@
 # Smiley Manager
 
-###### This version is still in development, thus I do not recommend you run beta/unsupported software in production.
+###### This version still in development, thus I do not recommend you run beta/unsupported software in production.
 ###### Stable version can be downloaded from http://xenforo.com/community/resources/smiley-manager.2538/
 
 ## About:

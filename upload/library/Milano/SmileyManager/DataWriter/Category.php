@@ -46,7 +46,6 @@ class Milano_SmileyManager_DataWriter_Category extends XenForo_DataWriter
     protected function _postSave()
     {
         $this->_getSmilieModel()->rebuildSmilieCache();
-		//$this->_getCategoryModel()->updateSmilieCount($this->get('smilie_category_id'));
         $this->_getCategoryModel()->rebuildCategories();
     }
 

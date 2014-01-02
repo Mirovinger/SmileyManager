@@ -41,8 +41,6 @@ class Milano_SmileyManager_DataWriter_Smilie extends XFCP_Milano_SmileyManager_D
 
 	protected function _postSave()
 	{
-		parent::_postSave();
-
 		if ($this->isInsert() || $this->isChanged('smilie_category_id'))
 		{
 			$this->_getCategoryModel()->updateSmilieCount($this->get('smilie_category_id'), 1);
@@ -80,14 +78,16 @@ class Milano_SmileyManager_DataWriter_Smilie extends XFCP_Milano_SmileyManager_D
 				}
 			}
 		}
+
+		return parent::_postSave();
 	}
 
 	protected function _postDelete()
 	{
-		parent::_postDelete();
-
 		$this->_getCategoryModel()->updateSmilieCount($this->get('smilie_category_id'), -1);
 		$this->_getCategoryModel()->rebuildCategories();
+
+		return parent::_postDelete();
 	}
 
 	protected function _getCategoryModel()
