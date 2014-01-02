@@ -48,7 +48,7 @@ class Milano_SmileyManager_Listener
 
     public static function editorSetup(XenForo_View $view, $formCtrlName, &$message, array &$editorOptions, &$showWysiwyg)
     {
-        if ($showWysiwyg)
+        if ($showWysiwyg && XenForo_Application::get('options')->SmileyManager_quickloadSmiley)
         {
         	$editorOptions['json']['editorOptions']['plugins'][] = 'SmileyManager';
         }
