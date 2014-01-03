@@ -36,21 +36,31 @@ class Milano_SmileyManager_Listener
     {
         $template->addRequiredExternal('css', 'SmilieyManager_editor_smilies');
         
-        if (XenForo_Application::get('options')->SmileyManager_quickloadSmiley)
-        {
-        	$visitor = XenForo_Visitor::getInstance();
-        	if (!empty($visitor['quickload_smiley']))
-        	{	
-        		$template->addRequiredExternal('js', 'js/Milano/SmileyManager/editor.js');
-        	}
+        if (self::_assertQuickloadSmileyEnabled())
+        {	
+        	$template->addRequiredExternal('js', 'js/Milano/SmileyManager/editor.js');
         }
     }
 
     public static function editorSetup(XenForo_View $view, $formCtrlName, &$message, array &$editorOptions, &$showWysiwyg)
     {
-        if ($showWysiwyg && XenForo_Application::get('options')->SmileyManager_quickloadSmiley)
+        if ($showWysiwyg && self::_assertQuickloadSmileyEnabled())
         {
         	$editorOptions['json']['editorOptions']['plugins'][] = 'SmileyManager';
         }
+    }
+
+    protected static function _assertQuickloadSmileyEnabled()
+    {
+    	if (XenForo_Application::get('options')->SmileyManager_quickloadSmiley)
+    	{	
+    		$visitor = XenForo_Visitor::getInstance();
+    		if (!empty($visitor['quickload_smiley']))
+    		{
+    			return true;
+    		}
+    	}
+
+    	return false;
     }
 }

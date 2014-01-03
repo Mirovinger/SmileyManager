@@ -7,7 +7,7 @@ class Milano_Common_Install
 	protected static $addOnData;
 
 	protected static $_tables;
-	protected static $_tableChanges;
+	protected static $_tablePatches;
 	protected static $_userFields;
 	protected static $_contentTypes;
 	protected static $_contentTypeFields;
@@ -29,7 +29,7 @@ class Milano_Common_Install
 		self::$addOnData = $addOnData;
 
 		self::$_tables = static::_getTables();
-		self::$_tableChanges = static::_getTableChanges();
+		self::$_tablePatches = static::_getTablePatches();
 		self::$_userFields = static::_getUserFields();
 		self::$_contentTypes = static::_getContentTypes();
 		self::$_contentTypeFields = static::_getContentTypeFields();
@@ -73,9 +73,9 @@ class Milano_Common_Install
 			self::createTables(self::$_tables);
 		}
 
-		if (!empty(self::$_tableChanges))
+		if (!empty(self::$_tablePatches))
 		{
-			self::alterTables(self::$_tableChanges);
+			self::alterTables(self::$_tablePatches);
 		}
 
 		if (!empty(self::$_userFields))
@@ -143,9 +143,9 @@ class Milano_Common_Install
 			self::dropTables(self::$_tables);
 		}
 
-		if (!empty(self::$_tableChanges))
+		if (!empty(self::$_tablePatches))
 		{
-			self::dropTableChanges(self::$_tableChanges);
+			self::dropTableChanges(self::$_tablePatches);
 		}
 
 		if (!empty(self::$_userFields))
@@ -620,7 +620,7 @@ class Milano_Common_Install
 		return array();
 	}
 	
-	protected static function _getTableChanges()
+	protected static function _getTablePatches()
 	{
 		return array();
 	}

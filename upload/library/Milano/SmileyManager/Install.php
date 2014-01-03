@@ -27,7 +27,7 @@ class Milano_SmileyManager_Install extends Milano_Common_Install
 		return $data;
 	}
 
-	protected static function _getTableChanges()
+	protected static function _getTablePatches()
 	{
 		$data = array();
 
