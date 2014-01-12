@@ -2,46 +2,31 @@
 
 class Milano_SmileyManager_Install extends Milano_Common_Install
 {
+	/* Start auto-generated lines of code. */
+
 	protected static function _getTables()
 	{
-		$data = array();
-
-		/*$data['smilie_category'] = "
-			`smilie_category_id` int(10) unsigned NOT NULL auto_increment,
-			`category_title` varchar(100) NOT NULL,
-			`display_order` int(10) unsigned NOT NULL default '0',
-			smilie_count int(10) unsigned NOT NULL default '0',
-			`active` TINYINT(3) UNSIGNED NOT NULL default '0',
-			PRIMARY KEY  (`smilie_category_id`)
-		";*/
-
-		$data['smilie_category'] = array(
-			'smilie_category_id' => 'int(10) unsigned NOT NULL auto_increment',
-			'category_title' => 'varchar(100) NOT NULL',
-			'display_order' => "int(10) unsigned NOT NULL default '0'",
-			'smilie_count' => "int(10) unsigned NOT NULL default '0'",
-			'active' => "TINYINT(3) UNSIGNED NOT NULL default '0'",
-			'EXTRA' => 'PRIMARY KEY (`smilie_category_id`)'
+		return array(
+			'smilie_category' => array(
+				'smilie_category_id' => 'INT(10) UNSIGNED AUTO_INCREMENT',
+				'category_title' => 'VARCHAR(100) NOT NULL',
+				'display_order' => 'INT(10) UNSIGNED NOT NULL DEFAULT \'0\'',
+				'smilie_count' => 'INT(10) UNSIGNED NOT NULL DEFAULT \'0\'',
+				'active' => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'0\'',
+				'EXTRA' => 'PRIMARY KEY (`smilie_category_id`)',
+			),
 		);
-
-		return $data;
 	}
 
 	protected static function _getTablePatches()
 	{
-		$data = array();
-
-		$data['xf_smilie'] = array(
-			'smilie_category_id' => 'INT(10) UNSIGNED DEFAULT 0',
-			'smilie_display_order' => 'INT(10) UNSIGNED DEFAULT 0'
+		return array(
+			'xf_smilie' => array('smilie_category_id' => 'INT(10) UNSIGNED DEFAULT \'0\''),
+			'xf_user_option' => array('smilie_category_id' => 'TINYINT(3) UNSIGNED DEFAULT \'1\''),
 		);
-
-		$data['xf_user_option'] = array(
-			'quickload_smiley' => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT 1'
-		);
-
-		return $data;
 	}
+
+	/* End auto-generated lines of code. */
 
 	protected static function _preInstallBeforeTransaction()
 	{
@@ -72,7 +57,5 @@ class Milano_SmileyManager_Install extends Milano_Common_Install
 		{
 			XenForo_Model::create('XenForo_Model_DataRegistry')->delete('groupedSmilies');
 		}
-
-		return true;
 	}
 }

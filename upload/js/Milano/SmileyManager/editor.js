@@ -1,24 +1,3 @@
-!function($, window, document, _undefined)
-{
-	if(typeof RedactorPlugins == 'undefined')				
-		RedactorPlugins = {};
+/* Jan 8, 2014 at 10:45 AM */
 
-	RedactorPlugins['SmileyManager'] = 
-	{
-		init: function()
-		{
-			var self = this;
-			
-			smileyLoaded = false;
-
-			self.$editor.on('focus click keydown', function() {
-				if (!smileyLoaded)
-				{	
-					self.$toolbar.find('.redactor_btn_smilies').click();
-					smileyLoaded = true;
-				}				
-			});
-		}
-	}
-}
-(jQuery, this, document);
+!function(){"undefined"==typeof RedactorPlugins&&(RedactorPlugins={}),RedactorPlugins.SmileyManager={init:function(){var a=this;smileyLoaded=!1,a.$editor.on("focus click keydown",function(){smileyLoaded||(a.$toolbar.find(".redactor_btn_smilies").click(),smileyLoaded=!0)})}}}(jQuery,this,document);
