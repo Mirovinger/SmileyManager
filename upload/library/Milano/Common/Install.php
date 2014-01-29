@@ -24,6 +24,8 @@ class Milano_Common_Install
 		{
     		throw new XenForo_Exception('You need at least PHP version 5.3.0 to install this add-on. Your version: ' . PHP_VERSION, true);
 		}
+
+		// Todo: Require Addon
 		
 		self::$existingAddOn = $existingAddOn;
 		self::$addOnData = $addOnData;
@@ -145,7 +147,7 @@ class Milano_Common_Install
 
 		if (!empty(self::$_tablePatches))
 		{
-			self::dropTableChanges(self::$_tablePatches);
+			self::dropTablePatches(self::$_tablePatches);
 		}
 
 		if (!empty(self::$_userFields))
@@ -264,6 +266,7 @@ class Milano_Common_Install
                 }
                 $sql .= implode(",", $sqlRows);
                 $sql .= ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";
+
 				try
 				{
 					self::_getDb()->query($sql);
@@ -302,6 +305,10 @@ class Milano_Common_Install
 				
 				$sql = "ALTER IGNORE TABLE `".$tableName."` ";
 				$sqlQuery = array();
+				if (isset($tableSql['EXTRA']))
+                {
+                	unset($tableSql['EXTRA']);
+                }
 				foreach ($tableSql as $rowName => $rowParams)
 				{
 					if (strpos($rowParams, 'PRIMARY KEY') !== false)
@@ -373,7 +380,7 @@ class Milano_Common_Install
 		}
 	}
 
-	public static function dropTableChanges(array $tables)
+	public static function dropTablePatches(array $tables)
 	{
 		foreach ($tables as $tableName => $tableSql)
 		{		
@@ -385,7 +392,7 @@ class Milano_Common_Install
 				{
 					try
 					{
-						self::_getDb()->query("ALTER TABLE `" . $tableName . "` DROP `" . $rowName);
+						self::_getDb()->query("ALTER TABLE " . $tableName . " DROP " . $rowName); 
 					}
 					catch (Zend_Db_Exception $e) {}
 				}

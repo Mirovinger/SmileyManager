@@ -1,281 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="SmileyManager" title="Smiley Manager" version_string="1.1.2" version_id="31" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
-  <admin_navigation>
-    <navigation navigation_id="SmileyManagerCategories" parent_navigation_id="bbCodeAndSmilies" display_order="32" link="smilie-categories" admin_permission_id="bbCodeSmilie" debug_only="0" hide_no_children="0"/>
-  </admin_navigation>
+<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.0.0" version_id="35" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
+  <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates>
-    <template title="SmileyManager_bulk_add_type"><![CDATA[<xen:title>{xen:phrase SmileyManager_choose_bulk_add_type}</xen:title>
-
-<xen:form action="{xen:adminlink smilies/bulk-add}">
-
-	<fieldset>
-		<xen:radiounit label="" name="type">
-			<xen:option value="directory" selected="true" label="{xen:phrase SmileyManager_directory}" hint="" />
-			<xen:option value="sprite" label="{xen:phrase SmileyManager_sprite_image}" hint="" />
-		</xen:radiounit>
-		
-		<xen:textboxunit label="{xen:phrase SmileyManager_image_path_directoy}:" name="data_source" />
-		
-		<xen:comment><xen:radiounit label="" name="type">
-			<xen:option value="directory" selected="true" label="{xen:phrase SmileyManager_directory}">
-				<xen:textbox label="{xen:phrase SmileyManager_image_path_directoy}:" name="directory_path" />	
-			</xen:option>
-			<xen:option value="sprite" label="{xen:phrase SmileyManager_sprite_image}:">
-					<xen:upload label="{xen:phrase SmileyManager_browse_image}:" name="sprite_image" />
-			</xen:option>
-		</xen:radiounit></xen:comment>	
-	</fieldset>
-	
-	<input type="hidden" name="_xfConfirm" value="1" />
-	<xen:submitunit save="{xen:phrase proceed}" />
-</xen:form>]]></template>
-    <template title="SmileyManager_category_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_category}: {$category.category_title}</xen:title>
-<xen:h1>{xen:phrase confirm_deletion_of_category}</xen:h1>
-
-<xen:navigation>
-	<xen:breadcrumb href="{xen:adminlink 'smilie-categories/edit', $category}">{$category.category_title}</xen:breadcrumb>
-</xen:navigation>
-
-<xen:require css="public:delete_confirmation.css" />
-
-<xen:form action="{xen:adminlink 'smilie-categories/delete'}" class="deleteConfirmForm formOverlay">
-
-	<p>{xen:phrase please_confirm_that_you_want_to_delete_following_category}:</p>
-	<strong><a href="{xen:adminlink 'smilie-categories/edit', $category}">{$category.category_title}</a></strong>
-
-	<xen:if is="{$categoryOptions}">
-		<xen:radiounit label="" name="move_child_smilies">
-			<xen:option value="0" selected="true">{xen:phrase SmileyManager_delete_this_categorys_smilies}</xen:option>
-			<xen:option value="1" label="{xen:phrase SmileyManager_attach_child_smilies_to_another_parent}:">
-				<xen:select name="new_category_id">
-					<xen:option value="0">{xen:phrase SmileyManager_uncategorized}</xen:option>
-					<xen:options source="$categoryOptions" />
-				</xen:select>
-			</xen:option>
-		</xen:radiounit>
-	</xen:if>
-
-	<input type="hidden" name="smilie_category_id" value="{$category.smilie_category_id}" />
-	<input type="hidden" name="_xfConfirm" value="1" />
-
-	<xen:submitunit save="{xen:phrase delete_category}" />
-</xen:form>]]></template>
-    <template title="SmileyManager_category_edit"><![CDATA[<xen:title>{xen:if '{$category.smilie_category_id}', '{xen:phrase edit_category}: {$category.category_title}', '{xen:phrase create_new_category}'}</xen:title>
-
-<xen:if is="{$category.smilie_category_id}">
-	<xen:navigation>
-		<xen:breadcrumb href="{xen:adminlink smilie-categories}#{xen:helper listitemid, $category.smilie_category_id}">{$category.category_title}</xen:breadcrumb>
-	</xen:navigation>
-</xen:if>
-
-<xen:form action="{xen:adminlink smilie-categories/save, $category}" class="AutoValidator" data-redirect="on">
-
-	<fieldset>
-		<xen:textboxunit label="{xen:phrase title}:" name="category_title" value="{$category.category_title}" data-liveTitleTemplate="{xen:if {$category.category_title},
-			'{xen:phrase edit_category}: <em>%s</em>',
-			'{xen:phrase create_new_category}: <em>%s</em>'}" />
-	
-		<xen:spinboxunit label="{xen:phrase display_order}:" name="display_order" value="{$category.display_order}" min="0" />
-		<xen:checkboxunit label="">
-			<xen:option name="active" selected="{$category.active}">{xen:phrase SmileyManager_category_is_active}</xen:option>
-		</xen:checkboxunit>
-	</fieldset>
-
-	<xen:submitunit save="{xen:phrase save_category}">
-		<xen:if is="{$category.smilie_category_id}">
-			<input type="button" value="{xen:phrase delete_category}..." accesskey="d" class="button OverlayTrigger"
-				data-href="{xen:adminlink 'smilie-categories/delete', $category}" />
-		</xen:if>
-	</xen:submitunit>
-</xen:form>]]></template>
-    <template title="SmileyManager_category_list"><![CDATA[<xen:title>{xen:phrase SmileyManager_categories}</xen:title>
-
-<xen:topctrl>
-	<a href="{xen:adminlink smilie-categories/add}" class="button">+ {xen:phrase create_new_category}</a>
-	<a href="{xen:adminlink smilie-categories/import}" class="button OverlayTrigger">+ {xen:phrase import}</a>
-</xen:topctrl>
-
-<xen:require css="filter_list.css" />
-<xen:require js="js/xenforo/filter_list.js" />
-
-<xen:form action="{xen:adminlink smilie-categories/toggle}" class="section AutoValidator">
-	<xen:if is="{$categories}">
-
-		<h2 class="subHeading">
-			<xen:include template="filter_list_controls" />
-			{xen:phrase SmileyManager_categories}
-		</h2>
-
-		<ol class="FilterList Scrollable">
-			<xen:foreach loop="$categories" value="$category">
-				<xen:listitem
-					id="{$category.smilie_category_id}"
-					label="{$category.category_title}"
-					href="{xen:adminlink 'smilie-categories', $category}"
-					delete="{xen:adminlink 'smilie-categories/delete', $category}"
-					deletehint="{xen:phrase delete}"
-					toggle="{$category.active}"
-					toggletitle="{xen:phrase enable_disable_x, 'title={$category.category_title}'}">
-					<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">						
-						<xen:link href="{xen:adminlink 'smilie-categories/add', $category}">{xen:phrase SmileyManager_add_smilies}</xen:link>
-						<xen:link href="{xen:adminlink 'smilie-categories/edit', $category}">{xen:phrase edit}</xen:link>
-						<xen:link href="{xen:adminlink 'smilie-categories/delete', $category}">{xen:phrase delete}</xen:link>
-						<xen:link href="{xen:adminlink 'smilie-categories/import', $category}">{xen:phrase import}</xen:link>
-						<xen:link href="{xen:adminlink 'smilie-categories/export', $category}" displayif="{$category.smilie_count}">{xen:phrase export}</xen:link>
-					</xen:popup>
-				</xen:listitem>
-			</xen:foreach>
-		</ol>
-
-		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $categories}</span>', 'total={xen:count $categories}'}</p>
-
-	<xen:else />
-		<div class="noResults">{xen:phrase no_items_have_been_created_yet}</div>
-	</xen:if>
-</xen:form>]]></template>
-    <template title="SmileyManager_category_view"><![CDATA[<xen:title>{xen:phrase SmileyManager_category}: {$category.category_title}</xen:title>
-
-<xen:navigation>
-	<xen:breadcrumb href="{xen:adminlink smilie-categories}#{xen:helper listitemid, $category.smilie_category_id}">{$category.category_title}</xen:breadcrumb>
-</xen:navigation>
-
-<xen:topctrl>
-	<xen:if is="!{$update}">
-		<a href="{xen:adminlink smilie-categories/add, $category}" class="button">+ {xen:phrase SmileyManager_add_more_smilies}</a>
-	</xen:if>
-	<a href="{xen:adminlink smilie-categories/edit, $category}" class="button">{xen:phrase edit_category}</a>
-	<a href="{xen:adminlink smilie-categories/import, $category}" class="button">{xen:phrase import}</a>
-	<xen:if is="{$category.smilie_count}">
-		<a href="{xen:adminlink smilie-categories/export, $category}" class="button">{xen:phrase export}</a>
-	</xen:if>
-</xen:topctrl>
-
-<xen:require css="filter_list.css" />
-<xen:require js="js/xenforo/filter_list.js" />
-<xen:if is="{$update}">
-	<xen:require js="js/Milano/filter_mod.js" />
-</xen:if>
-<xen:if is="{$sortable}">
-	<xen:require css="SmileyManager_sortable_list.css" />
-	<xen:require js="js/Milano/sortable_list.js" />
-</xen:if>
-
-<style>
-.listSmilie
-{
-	float: left;
-	margin: 5px 10px;
-}
-</style>
-
-<xen:if is="{$categories}">
-	<div class="topChoosers">
-		<div class="Popup">
-			<span class="muted">{xen:phrase SmileyManager_category}:</span> <a rel="Menu">{$category.category_title}</a>
-			<div class="Menu">
-				<div class="primaryContent menuHeader"><h3>{xen:phrase SmileyManager_categories}</h3></div>
-				<ul class="secondaryContent blockLinksList">
-					<xen:foreach loop="$categories" value="$_category">
-						<xen:if is="{$_category.smilie_category_id}">
-							<li><a href="{xen:adminlink 'smilie-categories', $_category}">{$_category.category_title}</a></li>
-						</xen:if>
-					</xen:foreach>
-				</ul>
-			</div>
-		</div>
-	</div>
-</xen:if>
-	
-<xen:if is="{$smilies}">
-		
-	<xen:form action="{xen:if {$update}, {xen:adminlink smilie-categories/update, $category}, {xen:adminlink smilie-categories, $category}}" class="section AutoValidator" data-redirect="yes">
-		<h2 class="subHeading">
-			<xen:if is="!{$update}">
-				<xen:include template="filter_list_controls" />
-			<xen:else />
-				<input type="checkbox" class="CheckAll Tooltip" data-filter=".selectListItem input:checkbox" title="{xen:phrase select_all}" data-offsetX="-8" />
-			</xen:if>
-			{xen:phrase smilies}
-		</h2>
-		
-		<ol class="FilterList {xen:if {$sortable}, 'SortableList'}">
-			<xen:foreach loop="$smilies" value="$smilie">
-				<xen:include template="SmileyManager_smilie_list_items" />
-			</xen:foreach>
-		</ol>
-		
-		<p class="sectionFooter">
-			<xen:if is="{$update}">
-				<input type="submit" class="button left" value="{xen:phrase SmileyManager_add_selected}" />
-			</xen:if>
-			<xen:if is="{$sortable}">
-				<input type="hidden" name="_xfConfirm" value="1" /> 
-				<xen:comment><input type="submit" class="button left" value="{xen:phrase proceed}" /></xen:comment>
-			</xen:if>
-			{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $smilies}</span>', 'total={xen:count $smilies}'}
-		</p>
-	</xen:form>
-		
-<xen:else />
-	<div>{xen:phrase no_smilies_have_been_added_yet}</div>
-</xen:if>]]></template>
-    <template title="SmileyManager_choose_category"><![CDATA[<xen:title>{xen:phrase SmileyManager_choose_category}</xen:title>
-
-<xen:form action="{xen:adminlink smilie-categories/import}">
-
-	<fieldset>
-		<xen:radiounit label="" name="new">
-			<xen:option value="1" selected="true" hint="{xen:phrase SmileyManager_new_category_create_xml_file}">{xen:phrase create_new_category}</xen:option>
-			<xen:option value="0" label="{xen:phrase SmileyManager_import_to_category}:">
-				<xen:select name="smilie_category_id">
-					<xen:options source="$categoryOptions" />
-				</xen:select>
-			</xen:option>
-		</xen:radiounit>
-	</fieldset>
-
-	<xen:submitunit save="{xen:phrase go}" />
-</xen:form>]]></template>
-    <template title="SmileyManager_grouped_smilie_list_items"><![CDATA[<xen:foreach loop="$groupedSmilies" key="$groupId" value="$smilies">
-	<div class="group">
-		<h3 class="textHeading {xen:if '!{$smilieCategories.{$groupId}.active}', 'disabled'}" id="_category{$smilieCategories.{$groupId}.smilie_category_id}">
-			<xen:if is="{$update}">
-				<input type="checkbox" class="CheckAll Tooltip" data-filter="._category{$groupId} input:checkbox" title="{xen:phrase SmileyManager_select_all_smilies_in_this_category}" data-offsetX="-8" />
-			</xen:if>
-			<xen:if is="{$smilieCategories.{$groupId}.smilie_category_id}">
-				<a href="{xen:adminlink smilie-categories, {$smilieCategories.{$groupId}}}">
-					{$smilieCategories.{$groupId}.category_title}	
-				</a>
-				<a href="{xen:adminlink smilie-categories/edit, {$smilieCategories.{$groupId}}}" class="edit controls OverlayTrigger" title="{xen:phrase edit}..."><span>{xen:phrase edit}</span></a>
-			<xen:else />
-				{$smilieCategories.{$groupId}.category_title}	
-			</xen:if>
-			<xen:if is="{$smilieCategories.{$groupId}.smilie_count}"><span class="count">({xen:number {$smilieCategories.{$groupId}.smilie_count}})</span></xen:if>
-		</h3>
-		<xen:foreach loop="$smilies" value="$smilie">
-			<xen:include template="SmileyManager_smilie_list_items" />
-		</xen:foreach>
-	</div>
-</xen:foreach>]]></template>
-    <template title="SmileyManager_helper_smilie_category"><![CDATA[<xen:selectunit label="{xen:phrase SmileyManager_category}:" name="smilie_category_id" value="{$smilie.smilie_category_id}">
-	<xen:option value="0">{xen:phrase SmileyManager_uncategorized}</xen:option>
-	<xen:options source="$categoryOptions" />
-</xen:selectunit>		
+    <template title="SmileyManager_import_choose_category"><![CDATA[<fieldset>
+	<xen:radiounit label="" name="new">
+		<xen:option value="1" selected="true" label="{xen:phrase create_new_category}">
+			<xen:disabled>
+				<xen:textbox placeholder="{xen:phrase title}" name="title" />
+				{xen:phrase display_order}:
+				<xen:spinbox name="display_order" min="0" step="10" />
+			</xen:disabled>
+		</xen:option>
+		<xen:option value="0" label="{xen:phrase SmileyManager_import_to_category}:">
+			<xen:select name="smilie_category_id">
+				<xen:options source="$smilieCategoryOptions" />
+			</xen:select>
+		</xen:option>
+	</xen:radiounit>
+</fieldset>
 ]]></template>
-    <template title="SmileyManager_import"><![CDATA[<xen:title>{xen:phrase SmileyManager_import_category_and_smilies}</xen:title>
-
-<xen:form action="{xen:adminlink 'smilie-categories/import'}" upload="true">
-	<xen:uploadunit label="{xen:phrase install_from_uploaded_file}:" name="upload_file" />
-	<xen:textboxunit label="{xen:phrase install_from_file_on_server}:" name="server_file" />
-	
-	<xen:submitunit save="{xen:phrase import}" />
-	
-	<input type="hidden" name="smilie_category_id" value="{$categoryId}" />
-	<input type="hidden" name="new" value="{$new}" />
-	<input type="hidden" name="_xfConfirm" value="1" />
-</xen:form>]]></template>
     <template title="SmileyManager_smilie_batch_update"><![CDATA[<xen:title>{xen:phrase SmileyManager_batch_update_smilies}</xen:title>
 
 <xen:form action="{xen:adminlink smilies/batch-update}" class="AutoValidator" data-redirect="yes">
@@ -285,9 +30,9 @@
 
 	<h3 class="textHeading">{xen:phrase SmileyManager_update_smilies}</h3>
 
-	<xen:selectunit label="{xen:phrase SmileyManager_set_category}:" name="smilie_category_id">
-		<xen:option value="0">{xen:phrase SmileyManager_uncategorized}</xen:option>
-		<xen:options source="$categoryOptions" />
+	<xen:selectunit label="{xen:phrase SmileyManager_select_category}:" name="smilie_category_id">
+		<xen:option value="0" label="({xen:phrase none})" />
+		<xen:options source="$smilieCategoryOptions" />
 	</xen:selectunit>
 
 	<xen:submitunit save="{xen:phrase SmileyManager_update_smilies}" />
@@ -296,368 +41,173 @@
 	<input type="hidden" name="smilie_ids" value="{xen:escape {xen:helper json, $smilieIds}}" />
 </xen:form>
 ]]></template>
-    <template title="SmileyManager_smilie_bulk_add"><![CDATA[<xen:title>{xen:phrase SmileyManager_bulk_add_smilies}</xen:title>
+    <template title="SmileyManager_smilie_import_sprite_image"><![CDATA[<xen:title>{xen:phrase import_smilies}</xen:title>
 
-<xen:form action="{xen:adminlink smilies/bulk-save}" class="AutoValidator" data-redirect="yes">
-	
-	<xen:if is="{$type} == 'directory'">
-		<xen:include template="SmileyManager_smilie_bulk_add_directory" />
-	<xen:elseif is="{$type} == 'sprite'" />
-		<xen:include template="SmileyManager_smilie_bulk_add_sprite" />
-	</xen:if>
-	
-	<fieldset>
-		<xen:include template="SmileyManager_helper_smilie_category" />
-	</fieldset>
-	
-	<input type="hidden" name="type" value="{$type}" />
-	<xen:submitunit save="{xen:phrase proceed}" />
-</xen:form>]]></template>
-    <template title="SmileyManager_smilie_bulk_add_directory"><![CDATA[<xen:if is="{$smilies}">
-
-<xen:require css="SmileyManager_smilie_bulk_add_list.css" />
-<xen:require js="js/Milano/SmileyManager/smiley.js" />
-	
-	<div class="SmileyList">
-		<xen:foreach loop="$smilies" key="$key" value="$smilie">
-		<xen:set var="$id" value="{xen:calc '{$key} + 1'}" />
-			<div class="SmileyListItem" id="smiley-{xen:raw $id}">
-				<div class="block">
-					<div class="left infoBlock">
-						<dl class="ctrlUnit">
-							<dt></dt>
-							<dd>
-								<div class="SmileyOutput">
-									<img src="{$smilie.path}" class="SmileyOutputImg" />
-								</div>
-							</dd>
-						</dl>
-						<xen:controlunit label="{xen:phrase display_order}:">
-							<xen:spinbox name="smilies[{xen:raw $id}][smilie_display_order]" value="{xen:raw $id}" min="1" inputclass="OptOut" />
-						</xen:controlunit>
-					</div>
-					<div class="right paramsBlock">
-						<xen:textboxunit label="{xen:phrase title}:" name="smilies[{xen:raw $id}][title]" value="{$smilie.filename}" />
-						<xen:textboxunit label="{xen:phrase text_to_replace}:" name="smilies[{xen:raw $id}][smilie_text]" value=":{$smilie.filename}:" rows="2" inputclass="Elastic" />
-						<input type="hidden" name="smilies[{xen:raw $id}][image_url]" value="{$smilie.path}" />
-					</div>
-				</div>
-				<a class="optionEditLink inputSupplementary SmileyMod" data-target="#smiley-{xen:raw $id}"><span class="editText delete">{xen:phrase delete}</span></a>
-			</div>
-		</xen:foreach>
-	</div>
-<xen:else />
-	<div class="noResults">{xen:phrase SmileyManager_there_no_smilies}</div>
-</xen:if>]]></template>
-    <template title="SmileyManager_smilie_bulk_add_item"><![CDATA[<div class="SmileyListItem" id="smiley-{$i}">
-	<div class="block">
-		<div class="left infoBlock">
-			<dl class="ctrlUnit">
-				<dt></dt>
-				<dd>
-					<div class="SmileyOutput" style="width: {xen:calc '{$sprite_params.w} + 4'}px"><div class="secondaryContent">
-						<img src="styles/default/xenforo/clear.png" style="
-							width: {$sprite_params.w}px;
-							height: {$sprite_params.h}px;
-							background: url('{$dataSource}') no-repeat {$sprite_params.x}px {$sprite_params.y}px;" />
-					</div></div>
-				</dd>
-			</dl>
-			<xen:textboxunit label="{xen:phrase title}:" name="smilies[{$i}][title]" value="" />
-			<xen:textboxunit label="{xen:phrase text_to_replace}:" name="smilies[{$i}][smilie_text]" value="" rows="2" inputclass="Elastic" />
-		</div>
-		<div class="right paramsBlock">
-			<xen:controlunit label="{xen:phrase sprite_dimensions}:">
-				<xen:spinbox name="smilies[{$i}][sprite_params][w]" value="{$sprite_params.w}" min="1" title="{xen:phrase width}" inputclass="Tooltip OptOut" />
-				<xen:spinbox name="smilies[{$i}][sprite_params][h]" value="{$sprite_params.h}" min="1" title="{xen:phrase height}" inputclass="Tooltip OptOut" />
-				px
-			</xen:controlunit>
-			
-			<xen:controlunit label="{xen:phrase sprite_position}:">
-				<xen:spinbox name="smilies[{$i}][sprite_params][x]" value="{$sprite_params.x}" title="{xen:phrase background_position_x}" inputclass="Tooltip OptOut" />
-				<xen:spinbox name="smilies[{$i}][sprite_params][y]" value="{$sprite_params.y}" title="{xen:phrase background_position_y}" inputclass="Tooltip OptOut" />
-				px
-			</xen:controlunit>
-			<xen:controlunit label="{xen:phrase display_order}:">
-				<xen:spinbox name="smilies[{$i}][smilie_display_order]" value="{$i}" min="1" inputclass="OptOut" />
-			</xen:controlunit>
-		</div>
-	</div>
-	<a class="optionEditLink inputSupplementary SmileyMod" data-target="#smiley-{$i}"><span class="editText delete">{xen:phrase delete}</span></a>
-</div>]]></template>
-    <template title="SmileyManager_smilie_bulk_add_list.css"><![CDATA[.optionEditLink
-{
-	top: 15px;
-}
-
-	.optionEditLink .editText.delete
-	{
-		opacity: 0.44;
-		cursor: pointer;
-		background: transparent url('{xen:property imagePath}/xenforo/permissions/deny.png') no-repeat 0px;
-	}
-	.optionEditLink .editText.delete:hover
-	{
-		opacity: 1;
-	}
-
-.SmileyList
-{
-
-}
-
-	.SmileyList .SmileyListItem
-	{
-		position: relative;
-		border-bottom: 1px solid {xen:property primaryLighterStill};
-		padding: 5px;
-		margin: 0 5px;
-	}
-
-	.SmileyList .SmileyListItem:last-child
-	{
-		border-bottom: none;
-	}
-
-	.SmileyList .SmileyListItem .block
-	{
-		margin-right: 20px;
-	}
-
-	.SmileyList .SmileyListItem .left
-	{
-		float: left;
-	}
-	.SmileyList .SmileyListItem .right
-	{
-		float: right;
-	}
-
-	.SmileyList .SmileyListItem .infoBlock
-	{
-		width: 35%;
-	}
-	.SmileyList .SmileyListItem .paramsBlock
-	{
-	}
-	.SmileyList .SmileyListItem .actionBlock
-	{
-		width: 5%;
-	}
-
-	.SmileyList .ctrlUnit > dd
-	{
-		padding-right: 0;
-	}
-
-{xen:helper clearfix, '.SmileyList .SmileyListItem'}
-
-.SmileyOutput
-{
-	height: 30px;
-	max-width: 200px;
-	overflow: hidden;
-}
-	
-	.SmileyOutput div
-	{
-		border: 1px solid {xen:property primaryLighterStill};
-		border-radius: 2px;
-		padding: 0;
-	}
-	
-		.SmileyOutput div img
-		{
-			margin: 1px;
-			display: block;
-		}]]></template>
-    <template title="SmileyManager_smilie_bulk_add_sprite"><![CDATA[<xen:require css="SmileyManager_smilie_bulk_add_list.css" />
+<xen:require css="smilie_edit.css" />
 <xen:require css="spritecow.css" />
 
 <xen:require js="js/Milano/SmileyManager/smiley.js" />
 <xen:require js="js/spritecow/jquery.transition.js" />
 <xen:require js="js/spritecow/main.js" />
 
-<div class="SmileyList"></div>
+<script type="text/javascript">
 
-<div class="container SpriteCow">
-	<div class="toolbar-container"></div>
-	<div class="canvas-view">
-		<div class="canvas-cell">
-			<div class="canvas-inner"></div>
-		</div>
-	</div>
-	<div class="toolbar-bottom-container"></div>
-	<div class="further-detail">
-		<div class="code-container"></div>
-	</div>
-</div>
-<div class="feature-test">
-	<h1>{xen:phrase SmileyManager_not_working_out}</h1>
-	<p>{xen:phrase SmileyManager_upgrade_browser}</p>
-</div>
-<input type="hidden" id="DataSource" name="data_source" value="{$dataSource}" />
-
-<script>
-jQuery.extend(XenForo.phrases,
-{	
-	add_smiley:	"{xen:jsescape {xen:phrase SmileyManager_add_smiley}}",								   
-	select_sprite: "{xen:jsescape {xen:phrase SmileyManager_select_sprite}}",
-	pick_background: "{xen:jsescape {xen:phrase SmileyManager_pick_background}}",
-	reload_current_image: "{xen:jsescape {xen:phrase SmileyManager_reload_current_image}}",
-	toggle_dark_background: "{xen:jsescape {xen:phrase SmileyManager_toggle_dark_background}}",
+	$(function()
+	{
+		$(document).on('change', 'input.Hider', function(e)
+		{
+			var $target = $($(this).data('target'));
+			
+			if (this.checked)
+			{
+				$target.xfFadeDown(XenForo.speed.fast);
+			}
+			else
+			{
+				$target.xfHide();
+			}
+		});
+		
+		$('#SmilieForm').bind('AutoValidationError', function(e)
+		{
+			var $target = $(e.target);
+			
+			if ($target.is(':hidden'))
+			{
+				$target.closest('.advanced').show();
+			}
+		});
+	});
 	
-	select_sprite_first: "{xen:jsescape {xen:phrase SmileyManager_select_sprite_first}}",
-	incorrect_background: "{xen:jsescape {xen:phrase SmileyManager_incorrect_background}}",
-	background_set_to_x: "{xen:jsescape {xen:phrase SmileyManager_background_set_to_x}}"
-});
-</script>]]></template>
-    <template title="SmileyManager_smilie_edit"><![CDATA[<xen:include template="SmileyManager_helper_smilie_category" />
-<xen:spinboxunit label="{xen:phrase display_order}:" name="smilie_display_order" value="{$smilie.smilie_display_order}" min="0" />]]></template>
-    <template title="SmileyManager_smilie_list"><![CDATA[<xen:title>{xen:phrase smilies}</xen:title>
+	jQuery.extend(XenForo.phrases,
+	{	
+		add_smiley:	"{xen:jsescape {xen:phrase SmileyManager_add_smiley}}",								   
+		select_sprite: "{xen:jsescape {xen:phrase SmileyManager_select_sprite}}",
+		pick_background: "{xen:jsescape {xen:phrase SmileyManager_pick_background}}",
+		reload_current_image: "{xen:jsescape {xen:phrase SmileyManager_reload_current_image}}",
+		toggle_dark_background: "{xen:jsescape {xen:phrase SmileyManager_toggle_dark_background}}",
+		
+		select_sprite_first: "{xen:jsescape {xen:phrase SmileyManager_select_sprite_first}}",
+		incorrect_background: "{xen:jsescape {xen:phrase SmileyManager_incorrect_background}}",
+		background_set_to_x: "{xen:jsescape {xen:phrase SmileyManager_background_set_to_x}}"
+	});
 
-<xen:topctrl>
-	<a href="{xen:adminlink smilies/add}" class="button">+ {xen:phrase add_new_smilie}</a>
-	<a href="{xen:adminlink smilies/bulk-add}" class="button OverlayTrigger">+ {xen:phrase SmileyManager_bulk_add_smilies}</a>
-	<a href="{xen:adminlink smilie-categories/add}" class="button">+ {xen:phrase create_new_category}</a>
-	<a href="{xen:adminlink smilie-categories/import}" class="button OverlayTrigger">+ {xen:phrase import}</a>
-</xen:topctrl>
+</script>
 
-<xen:require css="SmileyManager_smilie_list.css" />
-<xen:require css="filter_list.css" />
-<xen:require js="js/xenforo/filter_list.js" />
-<xen:require js="js/Milano/fixed_scroll.js" />
-<xen:if is="{$update}">
-	<xen:require js="js/Milano/filter_mod.js" />
-</xen:if>
+<xen:form class="AutoValidator"
+	action="{xen:adminlink smilies/import}"
+	data-fieldvalidatorurl="{xen:adminlink 'smilies/validate-import-field.json'}"
+	data-redirect="on"
+	id="SmilieForm">
 
-<xen:if is="{$smilieCategories}">
-	<div class="topChoosers">
-		<div class="Popup">
-			<a rel="Menu">{xen:phrase quick_navigation_menu}</a>
-			<div class="Menu">
-				<div class="primaryContent menuHeader"><h3>{xen:phrase SmileyManager_categories}</h3></div>
-				<ul class="secondaryContent blockLinksList">
-					<xen:foreach loop="$smilieCategories" value="$category">
-						<xen:if is="{$category.smilie_count}">
-							<li><a href="{$requestPaths.requestUri}#_category{$category.smilie_category_id}">{$category.category_title}</a></li>
-						</xen:if>
-					</xen:foreach>
-				</ul>
+
+	<div class="SmileyList"></div>
+	
+	<div class="container SpriteCow">
+		<div class="toolbar-container"></div>
+		<div class="canvas-view">
+			<div class="canvas-cell">
+				<div class="canvas-inner"></div>
 			</div>
 		</div>
+		<div class="toolbar-bottom-container"></div>
+		<div class="further-detail">
+			<div class="code-container"></div>
+		</div>
 	</div>
-</xen:if>
-
-<xen:form action="{xen:if $update, {xen:adminlink smilies/batch-update}, {xen:adminlink smilies, '', '_params={$linkParams}'}}" class="section" method="post">
+	<div class="feature-test">
+		<h1>{xen:phrase SmileyManager_not_working_out}</h1>
+		<p>{xen:phrase SmileyManager_upgrade_browser}</p>
+	</div>
 		
-	<xen:if is="{$groupedSmilies}">
-		<h2 class="subHeading">
-			<xen:if is="!{$update}">
-				<xen:include template="filter_list_controls" />
-			<xen:else />
-				<input type="checkbox" class="CheckAll Tooltip" data-filter=".selectListItem input:checkbox" title="{xen:phrase select_all}" data-offsetX="-8" />
-			</xen:if>
-			{xen:phrase smilies}
-		</h2>
-	
-		<ol class="FilterList Scrollable">
-			<xen:include template="SmileyManager_grouped_smilie_list_items" />
-		</ol>
-	
-		<p class="sectionFooter">
-			<xen:if is="!{$update}">
-				<a href="{xen:adminlink smilies, '', '_params={$linkParams}', 'update=1'}" class="left">{xen:phrase SmileyManager_batch_update_smilies}</a>
-			<xen:else />
-				<input type="submit" class="button left" value="{xen:phrase batch_update_selected}" />
-			</xen:if>
-			{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:number $smilieCount}</span>', 'total={xen:number $smilieCount}'}
-		</p>
+	<xen:if is="{$newSmilieCategories}">
+		<xen:foreach loop="$newSmilieCategories" key="$smilieCategoryId" value="$smilieCategory">
+			<input type="hidden" name="smilieCategories[{$smilieCategoryId}][title]" value="{$smilieCategory.title}" />
+			<input type="hidden" name="smilieCategories[{$smilieCategoryId}][display_order]" value="{$smilieCategory.display_order}" />
+		</xen:foreach>
+	</xen:if>
 		
-	<xen:else />
-		<div class="noResults">{xen:phrase no_smilies_have_been_added_yet}</div>
-	</xen:if>
+	<xen:submitunit save="{xen:phrase import_smilies}" />
+
+	{xen:raw $hiddenHtml}
+	<input type="hidden" id="ImageUrl" name="sprite_image" value="{$spriteImage}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+	
 </xen:form>]]></template>
-    <template title="SmileyManager_smilie_list.css"><![CDATA[.listSmilie
-{
-	float: left;
-	margin: 5px 15px;
-}
-
-.FilterList .listItem.disabled em, 
-.FilterList .textHeading.disabled a
-{
-	color: {xen:property mutedTextColor};
-	text-decoration: line-through;
-}
-
-.FilterList .textHeading .CheckAll
-{
-	margin-right: 5px;
-}]]></template>
-    <template title="SmileyManager_smilie_list_items"><![CDATA[<xen:set var="$smilieTextHtml">
-	<xen:foreach loop="$smilie.smilieTextArray" key="$_smilieText" value="$_null">
-		<span class="smilieText">{$_smilieText}</span>
-	</xen:foreach>
-</xen:set>
-<xen:set var="$smilieImage">
-	<xen:if is="{$sortable}">
-		<span class="handle"></span>
-	</xen:if>
-	<xen:if is="{$smilie.sprite_mode}">
-		<img src="styles/default/xenforo/clear.png" alt="{$smilie.title}" class="listSmilie" style="
-			width: {$smilie.sprite_params.w}px;
-			height: {$smilie.sprite_params.h}px;
-			background: url('{$smilie.image_url}') no-repeat {$smilie.sprite_params.x}px {$smilie.sprite_params.y}px;"
-		/>
-	<xen:else />
-		<img src="{$smilie.image_url}" alt="{$smilie.title}" class="listSmilie" />
-	</xen:if>
-</xen:set>
-<xen:listitem
-	id="{$smilie.smilie_id}"
-	selectable="{$update}"
-	selected="0"
-	selectname="smilie_ids[]"
-	class="_category{$groupId} {xen:if {$update}, 'FilterModCheck'} {xen:if '!{$smilieCategories.{$groupId}.active}', 'disabled'}"
-	label="{$smilie.title}"
-	snippet="{xen:raw $smilieTextHtml}"
-	href="{xen:adminlink smilies/edit, $smilie}"
-	delete="{xen:adminlink smilies/delete, $smilie}">
-	<xen:beforelabel>
-		{xen:raw $smilieImage}
-	</xen:beforelabel>
-	<xen:comment><xen:html>
-		<a href="{xen:adminlink smilies/edit, $smilie}" class="secondaryContent" title="{xen:phrase edit}">{xen:phrase edit}</a>
-	</xen:html></xen:comment>
-</xen:listitem>]]></template>
-    <template title="SmileyManager_sortable_list.css"><![CDATA[.SortableList
-{
-}
-	.SortableList .handle
-	{
-		float: left;
-		background: url('{xen:property imagePath}/Milano/grippy_large.png') repeat-y top left;
-		display: inline-block;
-		width: 5px;
-		height: 20px;
-		margin: 5px 0;
-		margin-left: 2px;
-		cursor: move;
-		opacity: 0.55;
-	}
-
-	.SortableList .listItem:hover .handle
-	{
-		opacity: 1;
-	}]]></template>
-    <template title="SmileyManager_tools_rebuild"><![CDATA[<xen:form action="{xen:adminlink 'tools/trigger-deferred'}">
-	<h2 class="subHeading">{xen:phrase SmileyManager_rebuild_smilies_categories}</h2>
-	<xen:comment><xen:spinboxunit name="options[batch]" value="250" step="50" min="1" label="{xen:phrase items_to_process_per_page}:" /></xen:comment>
-
-	<xen:submitunit save="{xen:phrase rebuild_now}" />
-	<input type="hidden" name="cache" value="Milano_SmileyManager_Deferred_Smilie" />
-</xen:form>]]></template>
+    <template title="SmileyManager_smilie_import_sprite_image_item"><![CDATA[<fieldset class="importSmilieBlock">
+		
+	<label class="importSmilieCheck"><input type="checkbox" class="Disabler notHider" id="smilie{$i}" name="import[]" value="{$i}" checked="checked" /> {xen:phrase import_this_smilie}</label>
+			
+		<div class="importSmiliePreview">
+			<img src="styles/default/xenforo/clear.png" alt="" style="
+				width: {$smilie.sprite_params.w}px;
+				height: {$smilie.sprite_params.h}px;
+				background: url('{$smilie.image_url}') no-repeat {$smilie.sprite_params.x}px {$smilie.sprite_params.y}px" />
+		</div>
+		
+		<div id="smilie{$i}_Disabler">
+			<xen:textboxunit name="smilies[{$i}][title]" value="{$smilie.title}"
+				label="{xen:phrase title}"
+				data-validatorname="title__{$i}" />
+					
+			<xen:textboxunit name="smilies[{$i}][smilie_text]" value="{$smilie.smilie_text}"
+				label="{xen:phrase text_to_replace}:"
+				rows="2" inputclass="Elastic"
+				data-validatorname="smilie_text__{$i}" />
+			
+			<xen:selectunit name="smilies[{$i}][smilie_category_id]" value="{$smilie.smilie_category_id}"
+				label="{xen:phrase smilie_category}:"
+				data-validatorname="smilie_category_id__{$i}">
+				<xen:option value="0" label="({xen:phrase none})" />
+				<xen:optgroup label="{xen:phrase new}">
+					<xen:options source="$newSmilieCategoryOptions" />
+				</xen:optgroup>
+				<xen:optgroup label="{xen:phrase existing}">
+					<xen:options source="$smilieCategoryOptions" />
+				</xen:optgroup>
+			</xen:selectunit>
+				
+			<xen:controlunit label="">
+				<xen:html><label class="importSmilieMoreOptions"><input type="checkbox" class="Hider" data-target="#smilie{$i}advanced" /> {xen:phrase more_options}...</label></xen:html>
+			</xen:controlunit>
+				
+			<div class="importSmilieAdvanced" id="smilie{$i}advanced">
+					
+				<xen:textboxunit name="smilies[{$i}][image_url]" value="{$smilie.image_url}"
+					label="{xen:phrase image_replacement_url}:"
+					data-validatorname="image_url__{$i}" />
+					
+				<xen:spinboxunit name="smilies[{$i}][display_order]" value="{$smilie.display_order}:"
+					label="{xen:phrase display_order}"
+					min="0" step="10"
+					data-validatorname="display_order__{$i}" />
+						
+				<xen:checkboxunit label="">
+					<xen:option name="smilies[{$i}][display_in_editor]" selected="{$smilie.display_in_editor}"
+						label="{xen:phrase show_this_smilie_in_the_text_editor}" />
+				</xen:checkboxunit>
+					
+				<xen:checkboxunit label="{xen:phrase sprite_mode}:">
+					<xen:option name="smilies[{$i}][sprite_mode]" selected="{$smilie.sprite_mode}"
+					label="{xen:phrase enable_sprite_mode_with_following_parameters}" />
+				</xen:checkboxunit>
+				
+				<xen:controlunit label="{xen:phrase sprite_dimensions}:">
+					<xen:spinbox name="smilies[{$i}][sprite_params][w]" value="{$smilie.sprite_params.w}" min="1" title="{xen:phrase width}" inputclass="Tooltip OptOut" />
+					<xen:spinbox name="smilies[{$i}][sprite_params][h]" value="{$smilie.sprite_params.h}" min="1" title="{xen:phrase height}" inputclass="Tooltip OptOut" />
+					px
+				</xen:controlunit>
+				
+				<xen:controlunit label="{xen:phrase sprite_position}:">
+					<xen:spinbox name="smilies[{$i}][sprite_params][x]" value="{$smilie.sprite_params.x}" title="{xen:phrase background_position_x}" inputclass="Tooltip OptOut" />
+					<xen:spinbox name="smilies[{$i}][sprite_params][y]" value="{$smilie.sprite_params.y}" title="{xen:phrase background_position_y}" inputclass="Tooltip OptOut" />
+					px
+				</xen:controlunit>
+				
+			</div>
+		</div>
+		
+</fieldset>]]></template>
     <template title="spritecow.css"><![CDATA[.container 
 {
     width: 100%;
@@ -668,7 +218,7 @@ jQuery.extend(XenForo.phrases,
     table-layout: fixed;
 	margin-top: 5px;
 	padding-top: 10px;
-	border-top: 1px solid {xen:property primaryLighterStill};
+	/*border-top: 1px solid {xen:property primaryLighterStill};*/
 }
 .container > * 
 {
@@ -1031,26 +581,42 @@ jQuery.extend(XenForo.phrases,
     }]]></template>
   </admin_templates>
   <admin_template_modifications>
-    <modification template="smilie_edit" modification_key="SmileyManager_helper_smilie_category" description="Add category for smilies" execution_order="10" enabled="1" action="str_replace">
-      <find><![CDATA[<xen:textboxunit label="{xen:phrase image_replacement_url}:" name="image_url" value="{$smilie.image_url}" />]]></find>
-      <replace><![CDATA[$0
+    <modification template="smilie_import" modification_key="SmileyManager_smilie_import_sprite" description="Add import from sprite mode" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[</xen:radiounit>]]></find>
+      <replace><![CDATA[<xen:option label="{xen:phrase SmileyManager_import_from_sprite_image}" value="sprite_image">
+	<xen:textbox name="sprite_image" placeholder="styles/default/xenforo/smilies-sprite.png" />
+	<xen:hint>{xen:phrase SmileyManager_smilie_pre_import_sprite_image_explain}</xen:hint>
+</xen:option>
 
-<xen:include template="SmileyManager_smilie_edit" />]]></replace>
+$0
+
+<xen:include template="SmileyManager_import_choose_category" />]]></replace>
     </modification>
-    <modification template="tools_rebuild" modification_key="SmileyManager_tools_rebuild" description="Add the builders for Smiley Manager" execution_order="10" enabled="1" action="preg_replace">
-      <find><![CDATA[/$/]]></find>
-      <replace><![CDATA[<xen:include template="SmileyManager_tools_rebuild" />]]></replace>
+    <modification template="smilie_list" modification_key="SmileyManager_smilie_list_script" description="" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[$('#ExportSmilies').click(function(e)]]></find>
+      <replace><![CDATA[$('#BatchUpdateSmilies').click(function(e)
+{
+	$('#ExportSmilies').trigger('click');
+	var $exportForm = $('#ExportForm');
+	$exportForm.attr('action', '{xen:adminlink smilies/batch-update}');
+	$exportForm.find('input[type="submit"]').val('{xen:jsescape {xen:phrase SmileyManager_update_selected_smilies}}');
+});
+
+$0]]></replace>
+    </modification>
+    <modification template="smilie_list" modification_key="SmileyManager_smilie_list_topctrl" description="Insert top control buttons" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[</xen:topctrl>]]></find>
+      <replace><![CDATA[<a href="javascript:" class="button JsOnly" id="BatchUpdateSmilies">{xen:phrase SmileyManager_batch_update_smilies}</a>
+
+$0]]></replace>
     </modification>
   </admin_template_modifications>
   <code_events/>
   <code_event_listeners>
     <listener event_id="editor_setup" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="editorSetup" active="1" hint="" description=""/>
     <listener event_id="load_class_controller" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadSmilieControllerAdmin" active="1" hint="XenForo_ControllerAdmin_Smilie" description=""/>
-    <listener event_id="load_class_controller" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadEditorController" active="1" hint="XenForo_ControllerPublic_Editor" description=""/>
     <listener event_id="load_class_controller" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadAccountController" active="1" hint="XenForo_ControllerPublic_Account" description=""/>
-    <listener event_id="load_class_datawriter" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadSmilieDataWriter" active="1" hint="XenForo_DataWriter_Smilie" description=""/>
     <listener event_id="load_class_datawriter" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadUserDataWriter" active="1" hint="XenForo_DataWriter_User" description=""/>
-    <listener event_id="load_class_model" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadSmilieModel" active="1" hint="XenForo_Model_Smilie" description=""/>
     <listener event_id="template_create" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="templateEditorCreate" active="1" hint="editor" description=""/>
   </code_event_listeners>
   <cron/>
@@ -1063,12 +629,6 @@ jQuery.extend(XenForo.phrases,
       <sub_options></sub_options>
       <relation group_id="messageOptions" display_order="1015"/>
     </option>
-    <option option_id="SmileyManager_showUncategorized" edit_format="onoff" data_type="boolean" can_backup="1">
-      <default_value>0</default_value>
-      <edit_format_params></edit_format_params>
-      <sub_options></sub_options>
-      <relation group_id="messageOptions" display_order="1010"/>
-    </option>
   </optiongroups>
   <permissions>
     <permission_groups/>
@@ -1076,52 +636,27 @@ jQuery.extend(XenForo.phrases,
     <interface_groups/>
   </permissions>
   <phrases>
-    <phrase title="admin_navigation_SmileyManagerCategories" version_id="1" version_string="1.0.0"><![CDATA[Smilie Categories]]></phrase>
+    <phrase title="option_SmileyManager_quickloadSmiley" version_id="31" version_string="1.1.2"><![CDATA[Enabled Quickload Smiley mode]]></phrase>
     <phrase title="option_SmileyManager_quickloadSmiley_explain" version_id="15" version_string="1.0.2"><![CDATA[If selected, all smilies will be loaded by clicking the textarea of the editor.]]></phrase>
-    <phrase title="option_SmileyManager_showUncategorized" version_id="7" version_string="1.0.0"><![CDATA[Show Uncategorized Smilies]]></phrase>
-    <phrase title="option_SmileyManager_showUncategorized_explain" version_id="7" version_string="1.0.0"><![CDATA[]]></phrase>
     <phrase title="SmileyManager_add_more_smilies" version_id="4" version_string="1.0.0"><![CDATA[Add More Smilies]]></phrase>
     <phrase title="SmileyManager_add_selected" version_id="5" version_string="1.0.0"><![CDATA[Add Selected]]></phrase>
     <phrase title="SmileyManager_add_smiley" version_id="23" version_string="1.1.0"><![CDATA[Add Smiley]]></phrase>
-    <phrase title="SmileyManager_add_smilies" version_id="7" version_string="1.0.0"><![CDATA[Add Smilies]]></phrase>
-    <phrase title="SmileyManager_allow_smilies_to_be_used_by" version_id="1" version_string="1.0.0"><![CDATA[Allow smilies to be used by]]></phrase>
-    <phrase title="SmileyManager_attach_child_smilies_to_another_parent" version_id="1" version_string="1.0.0"><![CDATA[Attach child smilies to another category]]></phrase>
     <phrase title="SmileyManager_background_set_to_x" version_id="23" version_string="1.1.0"><![CDATA[Background set to {color}]]></phrase>
     <phrase title="SmileyManager_batch_update_smilies" version_id="4" version_string="1.0.0"><![CDATA[Batch Update Smilies]]></phrase>
-    <phrase title="SmileyManager_browse_image" version_id="20" version_string="1.0.3"><![CDATA[Browse Image]]></phrase>
-    <phrase title="SmileyManager_bulk_add_smilies" version_id="19" version_string="1.0.3"><![CDATA[Bulk Add Smilies]]></phrase>
-    <phrase title="SmileyManager_categories" version_id="1" version_string="1.0.0"><![CDATA[Smilie Categories]]></phrase>
-    <phrase title="SmileyManager_category" version_id="1" version_string="1.0.0"><![CDATA[Smilie Category]]></phrase>
-    <phrase title="SmileyManager_category_is_active" version_id="1" version_string="1.0.0"><![CDATA[Category is active]]></phrase>
-    <phrase title="SmileyManager_choose_bulk_add_type" version_id="19" version_string="1.0.3"><![CDATA[Choose Bulk Add Type]]></phrase>
-    <phrase title="SmileyManager_choose_category" version_id="12" version_string="1.0.1"><![CDATA[Choose Category]]></phrase>
-    <phrase title="SmileyManager_delete_this_categorys_smilies" version_id="1" version_string="1.0.0"><![CDATA[Delete the category and its child smilies.]]></phrase>
-    <phrase title="SmileyManager_directory" version_id="19" version_string="1.0.3"><![CDATA[Directory]]></phrase>
-    <phrase title="SmileyManager_directory_empty" version_id="20" version_string="1.0.3"><![CDATA[Directory is empty.]]></phrase>
-    <phrase title="SmileyManager_directory_not_found" version_id="20" version_string="1.0.3"><![CDATA[The requested directory could not be found.]]></phrase>
     <phrase title="SmileyManager_enable_quickload_smiley_mode" version_id="15" version_string="1.0.2"><![CDATA[Enable Quickload Smiley mode]]></phrase>
-    <phrase title="SmileyManager_image_path_directory_not_empty" version_id="19" version_string="1.0.3"><![CDATA[Image Path/Directory can not be empty.]]></phrase>
-    <phrase title="SmileyManager_image_path_directoy" version_id="19" version_string="1.0.3"><![CDATA[Image Path/Directory]]></phrase>
-    <phrase title="SmileyManager_import_category_and_smilies" version_id="12" version_string="1.0.1"><![CDATA[Import Category And Smilies]]></phrase>
+    <phrase title="SmileyManager_import_from_sprite_image" version_id="31" version_string="1.1.2"><![CDATA[Import from sprite image]]></phrase>
     <phrase title="SmileyManager_import_to_category" version_id="12" version_string="1.0.1"><![CDATA[Import To Category]]></phrase>
     <phrase title="SmileyManager_incorrect_background" version_id="23" version_string="1.1.0"><![CDATA[Incorrect background colour set?]]></phrase>
-    <phrase title="SmileyManager_new_category_create_xml_file" version_id="12" version_string="1.0.1"><![CDATA[The new category will be created by using the infomation from XML file.]]></phrase>
-    <phrase title="SmileyManager_not_working_out" version_id="25" version_string="1.1.0"><![CDATA[Sorry, it isn't working out between us]]></phrase>
-    <phrase title="SmileyManager_option_SmileyManager_quickloadSmiley" version_id="30" version_string="1.1.2"><![CDATA[Enable Quickload Smiley]]></phrase>
     <phrase title="SmileyManager_pick_background" version_id="23" version_string="1.1.0"><![CDATA[Pick Background]]></phrase>
-    <phrase title="SmileyManager_provided_file_is_not_an_smilie_xml_file" version_id="12" version_string="1.0.1"><![CDATA[The provided file is not an smilie XML file.]]></phrase>
-    <phrase title="SmileyManager_rebuild_smilies_categories" version_id="11" version_string="1.0.0"><![CDATA[Rebuild Smilies and Categories]]></phrase>
     <phrase title="SmileyManager_reload_current_image" version_id="23" version_string="1.1.0"><![CDATA[Reload Current Image]]></phrase>
-    <phrase title="SmileyManager_select_all_smilies_in_this_category" version_id="3" version_string="1.0.0"><![CDATA[Select all smilies in this category]]></phrase>
+    <phrase title="SmileyManager_select_category" version_id="31" version_string="1.1.2"><![CDATA[Select Category]]></phrase>
     <phrase title="SmileyManager_select_sprite" version_id="23" version_string="1.1.0"><![CDATA[Select Sprite]]></phrase>
     <phrase title="SmileyManager_select_sprite_first" version_id="23" version_string="1.1.0"><![CDATA[Please select sprite first]]></phrase>
-    <phrase title="SmileyManager_set_category" version_id="4" version_string="1.0.0"><![CDATA[Set smilie category]]></phrase>
+    <phrase title="SmileyManager_smilie_pre_import_sprite_image_explain" version_id="31" version_string="1.1.2"><![CDATA[Use this option to browse smilie sprite image and then manually enter configuration data for each smilie to be imported. Ensure that the smilie sprite image is uploaded before proceeding with this step.]]></phrase>
     <phrase title="SmileyManager_sprite_image" version_id="19" version_string="1.0.3"><![CDATA[Sprite Image]]></phrase>
     <phrase title="SmileyManager_sprite_not_found" version_id="20" version_string="1.0.3"><![CDATA[The requested sprite image could not be found.]]></phrase>
-    <phrase title="SmileyManager_still_working" version_id="25" version_string="1.1.0"><![CDATA[Still Working...]]></phrase>
-    <phrase title="SmileyManager_there_no_smilies" version_id="19" version_string="1.0.3"><![CDATA[There are no smilies to display.]]></phrase>
     <phrase title="SmileyManager_toggle_dark_background" version_id="23" version_string="1.1.0"><![CDATA[Toggle Dark Background]]></phrase>
-    <phrase title="SmileyManager_uncategorized" version_id="1" version_string="1.0.0"><![CDATA[Uncategorized]]></phrase>
+    <phrase title="SmileyManager_update_selected_smilies" version_id="31" version_string="1.1.2"><![CDATA[Update Selected Smilies]]></phrase>
     <phrase title="SmileyManager_update_smilies" version_id="4" version_string="1.0.0"><![CDATA[Update Smilies]]></phrase>
     <phrase title="SmileyManager_upgrade_browser" version_id="25" version_string="1.1.0"><![CDATA[It's not you, I just can't get along with your browser.
 Maybe if things change in the future... maybe if you bring
@@ -1131,11 +666,7 @@ Maybe if things change in the future... maybe if you bring
 <a href="http://ie.microsoft.com/testdrive/Info/Downloads/Default.html">IE10</a>
 to the party... not promising anything, but give me a call.]]></phrase>
   </phrases>
-  <route_prefixes>
-    <route_type type="admin">
-      <prefix original_prefix="smilie-categories" class="Milano_SmileyManager_Route_PrefixAdmin_Categories" build_link="data_only"/>
-    </route_type>
-  </route_prefixes>
+  <route_prefixes/>
   <style_properties/>
   <templates>
     <template title="SmileyManager_account_preferences" version_id="15" version_string="1.0.2"><![CDATA[<xen:if is="{$xenOptions.SmileyManager_quickloadSmiley}"><li>
@@ -1143,61 +674,14 @@ to the party... not promising anything, but give me a call.]]></phrase>
 	{xen:phrase SmileyManager_enable_quickload_smiley_mode}</label>
 	<p class="hint">{xen:phrase option_SmileyManager_quickloadSmiley_explain}</p>
 </li></xen:if>]]></template>
-    <template title="SmilieyManager_editor_smilies" version_id="12" version_string="1.0.1"><![CDATA[<ul class="tabs Tabs SmiliesTabs" id="SmiliesTabs-{$serverTime}" data-panes="#SmiliesPanes-{$serverTime} > li.smiliesPane" data-history="on">
-	<xen:foreach loop="$categories" value="$category">
-		<li><a class="smilieCategoryTab {xen:if '{$category.smilie_category_id} == {$tabHistory}', 'active'}" data-tabHistory="{$category.smilie_category_id}">{$category.category_title}</a></li>
-	</xen:foreach>
-</ul>
-
-<ul id="SmiliesPanes-{$serverTime}" class="SmiliesPanes secondaryContent">
-	<xen:foreach loop="$groupedSmilies" key="$groupId" value="$smilies">
-		<li class="smiliesPane">
-			<xen:include template="editor_smilies" />
-		</li>
-	</xen:foreach>
-</ul>
-
-<script>
-$(function()
-{
-	XenForo.init();
-	$('.smilieCategoryTab').click(function() {
-		var $tab = $(this),
-			tabHistory = $tab.data('tabhistory'),
-			expires = new Date(new Date().getTime() + 90 * 86400000);
-		
-		$.setCookie('smTabHistory', tabHistory, expires);
-	});
-});
-</script>]]></template>
-    <template title="SmilieyManager_editor_smilies.css" version_id="10" version_string="1.0.0"><![CDATA[.redactor_box .redactor_smilies .SmiliesTabs li,
-.redactor_box .redactor_smilies li.smiliesPane,
-.SmiliesPanes.secondaryContent
-{
-	padding: 0;
-}
-
-.SmiliesTabs
-{
-	padding-top: 5px;
-}
-
-<xen:if is="{xen:property enableResponsive}">
-@media (max-width:{xen:property maxResponsiveNarrowWidth})
-{
-	.Responsive .redactor_box .redactor_smilies .SmiliesTabs li
-	{
-		display: block;
-	}
-}
-</xen:if>]]></template>
   </templates>
   <public_template_modifications>
-    <modification template="account_preferences" modification_key="SmileyManager_account_preferences" description="Add Smiley Manager preferences" execution_order="10" enabled="1" action="str_replace">
+    <modification template="account_preferences" modification_key="SmileyManager_account_preferences_quickload" description="Add Quickload Smiley option" execution_order="10" enabled="1" action="str_replace">
       <find><![CDATA[{xen:phrase use_rich_text_editor_to_create_and_edit_messages}</label></li>]]></find>
       <replace><![CDATA[$0
 <xen:include template="SmileyManager_account_preferences" />]]></replace>
     </modification>
   </public_template_modifications>
   <bb_code_media_sites/>
+  <bb_codes/>
 </addon>
