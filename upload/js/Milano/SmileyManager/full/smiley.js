@@ -1,5 +1,28 @@
+//
 !function($, window, document, _undefined)
 {
+	XenForo.SmileyMod = function($ctrl) { this.__construct($ctrl); };
+	XenForo.SmileyMod.prototype =
+	{
+		__construct: function($ctrl)
+		{
+			this.$ctrl = $ctrl.click($.context(this, 'remove'));
+			this.$target = $(this.$ctrl.data('target'));
+		},
+
+		remove: function(e)
+		{
+			if (!this.$target.length)
+			{
+				return;
+			}
+			this.$target.xfFadeUp(XenForo.speed.slow, function()
+			{
+				$(this).empty().remove();
+			});
+		},
+	};
+
 	XenForo.SpriteCow = function($container) { this.__construct($container); };
 	XenForo.SpriteCow.prototype =
 	{
@@ -15,10 +38,10 @@
 		{
 			var $canvasContainer  = $('.canvas-inner');
 			var $codeContainer    = $('.code-container');
-			var $imageUrl       = $('#ImageUrl');
+			var $dataSource       = $('#DataSource');
 			var spriteCanvas      = new spriteCow.SpriteCanvas();
 			var spriteCanvasView  = new spriteCow.SpriteCanvasView( spriteCanvas, $canvasContainer );
-			var imgInput          = new spriteCow.ImgInput( $canvasContainer, $canvasContainer, $imageUrl.val() );
+			var imgInput          = new spriteCow.ImgInput( $canvasContainer, $canvasContainer, $dataSource.val() );
 			var cssOutput         = new spriteCow.CssOutput( $codeContainer );
 			var toolbarTop        = new spriteCow.Toolbar('.toolbar-container');
 
@@ -81,16 +104,11 @@
 				}
 				else
 				{
-					var smileyData = $.extend(cssOutput.output,
+					var smileySprite = $.extend(cssOutput.output,
 					{
-						sprite_image: $imageUrl.val(),
-						new: $('input[name=new]').val(),
-						title: $('input[name=title]').val(),
-						display_order: $('input[name=display_order]').val(),
-						smilie_category_id: $('input[name=smilie_category_id]').val()
+						data_source: $dataSource.val()
 					});
-					
-					var xenForoSmiley = new spriteCow.XenForoSmiley(smileyData);
+					var xenForoSmiley = new spriteCow.XenForoSmiley(smileySprite);
 				}
 				event.preventDefault();
 			});
@@ -117,7 +135,7 @@
 				}
 			});
 
-			imgInput.loadImgUrl($imageUrl.val());
+			imgInput.loadImgUrl($dataSource.val());
 		},
 
 		colourBytesToCss: function(color)
@@ -142,6 +160,9 @@
 					if (ajaxData.templateHtml)
 					{
 						$(ajaxData.templateHtml).xfInsert('appendTo', '.SmileyList', 'xfFadeIn', XenForo.speed.slow);
+						XenForo.init();
+						
+						$('.SmileyList .SmileyListItem .paramsBlock').width('65%');
 					}
 				}
 			);
@@ -150,6 +171,7 @@
 
 	// *********************************************************************
 
+	XenForo.register('.SmileyMod', 'XenForo.SmileyMod');
 	XenForo.register('.SpriteCow', 'XenForo.SpriteCow');
 }
 (jQuery, this, document);

@@ -1,3 +1,3 @@
-/* Jan 29, 2014 at 10:07 PM */
+/* Jan 8, 2014 at 10:45 AM */
 
 !function(){"undefined"==typeof RedactorPlugins&&(RedactorPlugins={}),RedactorPlugins.SmileyManager={init:function(){var a=this;smileyLoaded=!1,a.$editor.on("focus click keydown",function(){smileyLoaded||(a.$toolbar.find(".redactor_btn_smilies").click(),smileyLoaded=!0)})}}}(jQuery,this,document);

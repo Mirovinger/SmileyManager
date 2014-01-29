@@ -2,132 +2,216 @@
 
 class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyManager_ControllerAdmin_Smilie
 {
-	public function actionImportForm()
+	public function actionIndex()
 	{
-		$input = $this->_input->filter(array(
-			'mode' => XenForo_Input::STRING,
-			'sprite_image' => XenForo_Input::STRING,
-			'new' => XenForo_Input::UINT,
-			'title' => XenForo_Input::STRING,
-			'display_order' => XenForo_Input::UINT,
-			'smilie_category_id' => XenForo_Input::UINT,
-		));
+		$response = parent::actionIndex();
 
-		if ($input['mode'] == 'sprite_image')
+		if ($response instanceof XenForo_ControllerResponse_View)
 		{
-			if (!file_exists($input['sprite_image']))
-			{
-				throw $this->responseException($this->responseError(new XenForo_Phrase('SmileyManager_sprite_not_found'), 404));
-			}
+			$viewParams =& $response->params;
 
-			if ($input['new'])
-			{
-				$keys = array('title', 'display_order');
-			}
-			else
-			{
-				$keys = array('smilie_category_id');
-			}
-			$keys[] = 'new';
+			$update = $this->_input->filterSingle('update', XenForo_Input::UINT);
 
-			$viewParams = array(
-				'spriteImage' => $input['sprite_image'],
-				'smilieCategoryOptions' => $this->_getSmilieModel()->getSmilieCategoryOptions(),
+			$groupedSmilies = $this->_getSmilieModel()->groupedSmiliesByCategory();
+			$smilieCategories = $this->_getCategoryModel()->getCategories(false);
 
-				'postData' => XenForo_Application::arrayFilterKeys($input, $keys)
-			);
+			$viewParams['groupedSmilies'] = $this->_getSmilieModel()->prepareGroupedSmiliesForList($groupedSmilies);
+			$viewParams['smilieCategories'] = $smilieCategories;
+			$viewParams['smilieCount'] = count($viewParams['smilies']);
+			$viewParams['update'] = $update;
+			
+			unset($viewParams['smilies']);
 
-			return $this->responseView('Milano_SmileyManager_ViewAdmin_Smilie_ImportSprite', 'SmileyManager_smilie_import_sprite_image', $viewParams);
-		}
-
-		$response = parent::actionImportForm();
-
-		if ($input['new'])
-		{
-			$id = rand(1, 10) * -1;
-			$response->params['newSmilieCategories'] = array(
-				$id => array(
-					'id' => $id,
-					'title' => $input['title'],
-					'display_order' => $input['display_order'],
-				)
-			);
-
-			$response->params['newSmilieCategoryOptions'][$id] = $input['title'];
-			$categoryId = $id;
-		}
-		else
-		{
-			$categoryId = $input['smilie_category_id'];
-		}
-
-		if (!empty($response->params['smilies']))
-		{
-			foreach ($response->params['smilies'] as &$smilie) 
-			{
-				$smilie['smilie_category_id'] = $categoryId;
-			}
+			$response->templateName = 'SmileyManager_smilie_list';
 		}
 
 		return $response;
 	}
 
-	public function actionImport()
+	public function actionAdd()
 	{
-		$response = parent::actionImport();
+		$response = parent::actionAdd();
 
 		if ($response instanceof XenForo_ControllerResponse_View)
 		{
-			$response->params['smilieCategoryOptions'] = $this->_getSmilieModel()->getSmilieCategoryOptions();
+			if ($categoryId = $this->_input->filterSingle('smilie_category_id', XenForo_Input::UINT))
+			{
+				$response->params['smilie']['smilie_category_id'] = $categoryId;
+			}
+			$response->params['categoryOptions'] = $this->_getCategoryModel()->getCategoryOptions();
 		}
 
 		return $response;
+	}
+
+	public function actionEdit()
+	{
+		$response = parent::actionEdit();
+
+		if ($response instanceof XenForo_ControllerResponse_View)
+		{
+			$response->params['categoryOptions'] = $this->_getCategoryModel()->getCategoryOptions();
+		}
+
+		return $response;
+	}
+
+	public function actionSave()
+	{
+		$GLOBALS['Milano_SmileyManager_ControllerAdmin_Smilie'] = $this;
+		
+		return parent::actionSave();
+	}
+
+	public function SmileyManager_actionSave(XenForo_DataWriter_Smilie $dw)
+	{
+		$categoryId = $this->_input->filterSingle('smilie_category_id', XenForo_Input::UINT);
+		$displayOrder = $this->_input->filterSingle('smilie_display_order', XenForo_Input::UINT);
+
+		$dw->set('smilie_category_id', $categoryId);
+		$dw->set('smilie_display_order', $displayOrder);
 	}
 
 	public function actionBatchUpdate()
 	{
-		if ($this->isConfirmedPost())
+		if ($smilieIds = $this->_input->filterSingle('smilie_ids', XenForo_Input::JSON_ARRAY))
 		{
-			$smilieIds = $this->_input->filterSingle('smilie_ids', XenForo_Input::JSON_ARRAY);
-			$categoryId = $this->_input->filterSingle('smilie_category_id', XenForo_Input::UINT);
+			$categoryModel = $this->_getCategoryModel();
 
-			if (!empty($smilieIds))
+			$totalSmilies = count($smilieIds);
+
+			if ($this->isConfirmedPost())
 			{
-				XenForo_Db::beginTransaction();
+				$categoryId = $this->_input->filterSingle('smilie_category_id', XenForo_Input::UINT);
 
-				foreach ($smilieIds as $smilieId) 
-				{
-					$dw = XenForo_DataWriter::create('XenForo_DataWriter_Smilie');
-					$dw->setExistingData($smilieId);
-					$dw->set('smilie_category_id', $categoryId);
-					$dw->save();
-				}
+				$this->_getSmilieModel()->updateSmiliesToCategory($smilieIds, $categoryId);
+				$category = $categoryModel->getCategoryById($categoryId);
 
-				XenForo_Db::commit();
+				return $this->responseRedirect(
+					XenForo_ControllerResponse_Redirect::SUCCESS,
+					XenForo_Link::buildAdminLink('smilie-categories', $category)
+				);
 			}
-
+			else
+			{
+				return $this->responseView('Milano_SmileyManager_ViewAdmin_Smilie_BatchUpdate', 'SmileyManager_smilie_batch_update', array(
+					'smilieIds' => $smilieIds,
+					'totalSmilies' => $totalSmilies,
+					'categoryOptions' => $categoryModel->getCategoryOptions()
+				));
+			}
+		}
+		else
+		{
 			return $this->responseRedirect(
 				XenForo_ControllerResponse_Redirect::SUCCESS,
 				XenForo_Link::buildAdminLink('smilies')
 			);
 		}
-		else
+	}
+
+	public function actionBulkAdd()
+	{
+		$input = $this->_input->filter(array(
+			'data_source' => XenForo_Input::STRING,
+			'type' => XenForo_Input::STRING
+		));
+
+		if ($this->isConfirmedPost())
 		{
-			$smilieIds = $this->_input->filterSingle('smilieId', XenForo_Input::ARRAY_SIMPLE);
-			if (!$smilieIds)
+			if (!$input['data_source'])
+			{
+				throw $this->responseException($this->responseError(new XenForo_Phrase('SmileyManager_image_path_directory_not_empty')));
+			}
+
+			$smilieModel = $this->_getSmilieModel();
+			$smilies = array();
+
+			if ($input['type'] == 'directory')
+			{
+				if (!file_exists($input['data_source']))
+				{
+					throw $this->responseException($this->responseError(new XenForo_Phrase('SmileyManager_directory_not_found'), 404));
+				}
+				$images = $smilieModel->getImagesFromDirectory($input['data_source']);
+				if (empty($images))
+				{
+					throw $this->responseException($this->responseError(new XenForo_Phrase('SmileyManager_directory_empty'), 404));
+				}
+				foreach ($images as $key => &$image) 
+				{
+					$info = pathinfo($image);
+					$smilies[$key] = array(
+						'path' => $image,
+						'filename' => $info['filename']
+					);
+				}
+			}
+			else if ($input['type'] == 'sprite')
+			{
+				if (!file_exists($input['data_source']))
+				{
+					throw $this->responseException($this->responseError(new XenForo_Phrase('SmileyManager_sprite_not_found'), 404));
+				}
+			}
+			else
 			{
 				return $this->responseRedirect(
 					XenForo_ControllerResponse_Redirect::SUCCESS,
-					XenForo_Link::buildAdminLink('smilies')
+					XenForo_Link::buildAdminLink('smilies/bulk-add')
 				);
 			}
 
-			return $this->responseView('Milano_SmileyManager_ViewAdmin_Smilie_BatchUpdate', 'SmileyManager_smilie_batch_update', array(
-				'smilieIds' => $smilieIds,
-				'totalSmilies' => count($smilieIds),
-				'smilieCategoryOptions' => $this->_getSmilieModel()->getSmilieCategoryOptions()
-			));
+			$viewParams = array(
+				'type' => $input['type'],
+				'dataSource' => $input['data_source'],
+
+				'categoryOptions' => $this->_getCategoryModel()->getCategoryOptions(),
+				'smilies' => $smilies
+			);
+
+			return $this->responseView('Milano_SmileyManager_ViewAdmin_BulkAdd', 'SmileyManager_smilie_bulk_add', $viewParams);
 		}
+		else
+		{
+			return $this->responseView('Milano_SmileyManager_ViewAdmin_ChooseType', 'SmileyManager_bulk_add_type', array());
+		}
+	}
+
+	public function actionBulkSave()
+	{
+		$this->_assertPostOnly();
+
+		$input = $this->_input->filter(array(
+			'smilies' => XenForo_Input::ARRAY_SIMPLE,
+			'smilie_category_id' => XenForo_Input::UINT,
+			'type' => XenForo_Input::STRING
+		));
+
+		$category = $this->_getCategoryModel()->getCategoryById($input['smilie_category_id']);
+
+		foreach ($input['smilies'] as &$smilie) 
+		{
+			if ($input['type'] == 'sprite')
+			{
+				$smilie['sprite_mode'] = 1;
+				$smilie['image_url'] = $this->_input->filterSingle('data_source', XenForo_Input::STRING);
+			}
+			$smilie['smilie_category_id'] = $input['smilie_category_id'];
+		}
+
+		$this->_getSmilieModel()->createSmilies($input['smilies']);
+
+		$redirect = XenForo_Link::buildAdminLink('smilies');
+		if ($category)
+		{
+			$redirect = XenForo_Link::buildAdminLink('smilie-categories', $category);
+		}
+
+		return $this->responseRedirect(
+			XenForo_ControllerResponse_Redirect::SUCCESS,
+			$redirect
+		);
 	}
 
 	public function actionSprite()
@@ -135,56 +219,30 @@ class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyMana
 		$this->_assertPostOnly();
 
 		$input = $this->_input->filter(array(
-			'sprite_image' => XenForo_Input::STRING,
+			'data_source' => XenForo_Input::STRING,
 			'key' => XenForo_Input::UINT,
 			'width' => XenForo_Input::UINT,
 			'height' => XenForo_Input::UINT,
 			'x' => XenForo_Input::STRING,
-			'y' => XenForo_Input::STRING,
-
-			'new' => XenForo_Input::UINT,
-			'title' => XenForo_Input::STRING,
-			'display_order' => XenForo_Input::UINT,
-			'smilie_category_id' => XenForo_Input::UINT
+			'y' => XenForo_Input::STRING
 		));
 
 		$viewParams = array(
 			'i' => $input['key'],
-			'smilie' => array(
-				'image_url' => $input['sprite_image'],
-				'sprite_mode' => 1,
-				'sprite_params' => array(
-					'w' => $input['width'],
-					'h' => $input['height'],
-					'x' => $input['x'],
-					'y' => $input['y']
-				),
-				'display_order' => $input['key'] * 10,
-				'display_in_editor' => 1
-			),
-			'smilieCategoryOptions' => $this->_getSmilieModel()->getSmilieCategoryOptions(),
+			'dataSource' => $input['data_source'],
+			'sprite_params' => array(
+				'w' => $input['width'],
+				'h' => $input['height'],
+				'x' => $input['x'],
+				'y' => $input['y']
+			) 
 		);
 
-		if ($input['new'])
-		{
-			$id = rand(1, 10) * -1;
-			$viewParams['newSmilieCategories'] = array(
-				$id => array(
-					'id' => $id,
-					'title' => $input['title'],
-					'display_order' => $input['display_order'],
-				)
-			);
+		return $this->responseView('Milano_SmileyManager_ViewAdmin_Template', 'SmileyManager_smilie_bulk_add_item', $viewParams);
+	}
 
-			$viewParams['newSmilieCategoryOptions'][$id] = $input['title'];
-			$categoryId = $id;
-		}
-		else
-		{
-			$categoryId = $input['smilie_category_id'];
-		}
-		$viewParams['smilie']['smilie_category_id'] = $categoryId;
-
-		return $this->responseView('Milano_SmileyManager_ViewAdmin_Template', 'SmileyManager_smilie_import_sprite_image_item', $viewParams);
+	protected function _getCategoryModel()
+	{
+		return $this->getModelFromCache('Milano_SmileyManager_Model_Category');
 	}
 }
