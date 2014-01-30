@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.0.0" version_id="35" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
+<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.0.0" version_id="36" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates>
     <template title="SmileyManager_import_choose_category"><![CDATA[<fieldset>
 	<xen:radiounit label="" name="new">
+		<xen:option value="0" label="{xen:phrase SmileyManager_import_to_category}:">
+			<xen:select name="smilie_category_id">
+				<xen:options source="$smilieCategoryOptions" />
+			</xen:select>
+		</xen:option>
 		<xen:option value="1" selected="true" label="{xen:phrase create_new_category}">
 			<xen:disabled>
 				<xen:textbox placeholder="{xen:phrase title}" name="title" />
 				{xen:phrase display_order}:
 				<xen:spinbox name="display_order" min="0" step="10" />
 			</xen:disabled>
-		</xen:option>
-		<xen:option value="0" label="{xen:phrase SmileyManager_import_to_category}:">
-			<xen:select name="smilie_category_id">
-				<xen:options source="$smilieCategoryOptions" />
-			</xen:select>
 		</xen:option>
 	</xen:radiounit>
 </fieldset>
@@ -581,7 +581,7 @@
     }]]></template>
   </admin_templates>
   <admin_template_modifications>
-    <modification template="smilie_import" modification_key="SmileyManager_smilie_import_sprite" description="Add import from sprite mode" execution_order="10" enabled="1" action="str_replace">
+    <modification template="smilie_import" modification_key="SmileyManager_smilie_import_sprite" description="Add import from sprite mode and categories choosers" execution_order="10" enabled="1" action="str_replace">
       <find><![CDATA[</xen:radiounit>]]></find>
       <replace><![CDATA[<xen:option label="{xen:phrase SmileyManager_import_from_sprite_image}" value="sprite_image">
 	<xen:textbox name="sprite_image" placeholder="styles/default/xenforo/smilies-sprite.png" />
@@ -592,15 +592,27 @@ $0
 
 <xen:include template="SmileyManager_import_choose_category" />]]></replace>
     </modification>
-    <modification template="smilie_list" modification_key="SmileyManager_smilie_list_script" description="" execution_order="10" enabled="1" action="str_replace">
+    <modification template="smilie_list" modification_key="SmileyManager_smilie_list_script" description="#BatchUpdateSmilies" execution_order="15" enabled="1" action="str_replace">
       <find><![CDATA[$('#ExportSmilies').click(function(e)]]></find>
       <replace><![CDATA[$('#BatchUpdateSmilies').click(function(e)
 {
-	$('#ExportSmilies').trigger('click');
 	var $exportForm = $('#ExportForm');
 	$exportForm.attr('action', '{xen:adminlink smilies/batch-update}');
 	$exportForm.find('input[type="submit"]').val('{xen:jsescape {xen:phrase SmileyManager_update_selected_smilies}}');
+	//$('#ExportSmilies').trigger('click');
+	$('label.selectListItem, #ExportForm, #ExportHint').toggle();	
+	$('.listItem .toggler, .listItem .delete, .togglerAll').toggle();
+		
+	return false;
 });
+
+$0]]></replace>
+    </modification>
+    <modification template="smilie_list" modification_key="SmileyManager_smilie_list_script2" description="#ExportSmilies" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[$('label.selectListItem, #ExportForm, #ExportHint').toggle();]]></find>
+      <replace><![CDATA[var $exportForm = $('#ExportForm');
+$exportForm.attr('action', '{xen:adminlink smilies/export}');
+$exportForm.find('input[type="submit"]').val('{xen:jsescape {xen:phrase export_selected_smilies}}');
 
 $0]]></replace>
     </modification>
