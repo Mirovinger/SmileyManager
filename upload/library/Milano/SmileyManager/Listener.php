@@ -18,9 +18,7 @@ class Milano_SmileyManager_Listener
 	}
 
 	public static function templateEditorCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
-    {
-        $template->addRequiredExternal('css', 'SmilieyManager_editor_smilies');
-        
+    {        
         if (self::_assertQuickloadSmileyEnabled())
         {	
         	$template->addRequiredExternal('js', 'js/Milano/SmileyManager/editor.js');
