@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.0.0" version_id="37" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
+<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.0.0" version_id="39" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates>
     <template title="SmileyManager_import_choose_category"><![CDATA[<fieldset>
 	<xen:radiounit label="" name="new">
-		<xen:option value="0" label="{xen:phrase SmileyManager_import_to_category}:">
+		<xen:option value="0" selected="true" label="{xen:phrase SmileyManager_import_to_category}:">
 			<xen:select name="smilie_category_id">
 				<xen:options source="$smilieCategoryOptions" />
 			</xen:select>
 		</xen:option>
-		<xen:option value="1" selected="true" label="{xen:phrase create_new_category}">
+		<xen:option value="1" label="{xen:phrase create_new_category}">
 			<xen:disabled>
 				<xen:textbox placeholder="{xen:phrase title}" name="title" />
 				{xen:phrase display_order}:

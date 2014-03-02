@@ -44,7 +44,7 @@ class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyMana
 
 		if ($input['new'])
 		{
-			$id = rand(1, 10) * -1;
+			$id = rand(10, 20) * -1;
 			$response->params['newSmilieCategories'] = array(
 				$id => array(
 					'id' => $id,
@@ -167,7 +167,7 @@ class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyMana
 
 		if ($input['new'])
 		{
-			$id = rand(1, 10) * -1;
+			$id = rand(10, 20) * -1;
 			$viewParams['newSmilieCategories'] = array(
 				$id => array(
 					'id' => $id,

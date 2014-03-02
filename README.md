@@ -7,12 +7,9 @@
 Smiley Manager is a useful tool for smilies management that help you group them into categories.​
 
 ## Features:
- * Add smilie categories.
- * Batch update smilies to category.
- * Bulk add smilies.
- * Display smilies with tab in the editor.
- * Smiley import and export.
- * Smiley display order.
+ * Batch update smilies.
+ * Select category before import.
+ * Import smilies from Sprite Image.
  * Quickload Smiley mode.
 
 ## Installation:
@@ -25,7 +22,6 @@ Smiley Manager is a useful tool for smilies management that help you group them 
 
 ## Credits:
  * [Sprite Cow](http://www.spritecow.com/) by Jake Archibald.
- * [jquery sortable](http://johnny.github.io/jquery-sortable/) by johnny.
 
 ## Like This Addon?
 Simply leave a review and tell me how much you like it. If you appreciate the work, please [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DQPEKAAP2QSZ8).
