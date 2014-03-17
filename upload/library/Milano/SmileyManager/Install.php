@@ -11,14 +11,12 @@ class Milano_SmileyManager_Install extends Milano_Common_Install
 
 	protected static function _getTablePatches()
 	{
-<<<<<<< HEAD
 		return array(
 			'xf_smilie' => array('smilie_category_id' => 'INT(10) UNSIGNED DEFAULT \'0\'', 'smilie_display_order' => 'INT(10) UNSIGNED DEFAULT \'0\''),
 			'xf_user_option' => array('smilie_category_id' => 'TINYINT(3) UNSIGNED DEFAULT \'1\''),
 		);
-=======
+
 		return array('xf_user_option' => array('quickload_smiley' => 'TINYINT(3) UNSIGNED DEFAULT \'1\''));
->>>>>>> origin/1.3-dev
 	}
 
 	/* End auto-generated lines of code. */
