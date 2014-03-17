@@ -6,37 +6,77 @@ class Milano_SmileyManager_Install extends Milano_Common_Install
 
 	protected static function _getTables()
 	{
-		return array(
-			'smilie_category' => array(
-				'smilie_category_id' => 'INT(10) UNSIGNED AUTO_INCREMENT',
-				'category_title' => 'VARCHAR(100) NOT NULL',
-				'display_order' => 'INT(10) UNSIGNED NOT NULL DEFAULT \'0\'',
-				'smilie_count' => 'INT(10) UNSIGNED NOT NULL DEFAULT \'0\'',
-				'active' => 'TINYINT(3) UNSIGNED NOT NULL DEFAULT \'0\'',
-				'EXTRA' => 'PRIMARY KEY (`smilie_category_id`)',
-			),
-		);
+		return array();
 	}
 
 	protected static function _getTablePatches()
 	{
+<<<<<<< HEAD
 		return array(
 			'xf_smilie' => array('smilie_category_id' => 'INT(10) UNSIGNED DEFAULT \'0\'', 'smilie_display_order' => 'INT(10) UNSIGNED DEFAULT \'0\''),
 			'xf_user_option' => array('smilie_category_id' => 'TINYINT(3) UNSIGNED DEFAULT \'1\''),
 		);
+=======
+		return array('xf_user_option' => array('quickload_smiley' => 'TINYINT(3) UNSIGNED DEFAULT \'1\''));
+>>>>>>> origin/1.3-dev
 	}
 
 	/* End auto-generated lines of code. */
 
-	protected static function _preInstallBeforeTransaction()
+	protected static function _preInstall()
 	{
-		if (self::$existingAddOn && self::$existingAddOn['version_id'] < 14)
+		self::checkXfVersion(1030031, '1.3.0');
+
+		self::_import();
+	}
+
+	protected static function _postInstall()
+	{
+		self::_deleteSimpleCacheData();
+		self::_deleteDataRegistry();
+
+		$tablePatches = array('smilie_display_order' => 'INT(10) UNSIGNED DEFAULT \'0\'');
+		if (self::isFieldExists('xf_smilie', 'smilie_category_id_old'))
 		{
-			self::_deleteDataRegistry();
+			$tablePatches['smilie_category_id_old'] = 'INT(10) UNSIGNED DEFAULT \'0\'';
+		}
+
+		self::dropTablePatches(array('xf_smilie' => $tablePatches));
+	}
+
+	protected static function _import()
+	{
+		$categories = XenForo_Application::getSimpleCacheData('smilieCategories');
+		$smilies = XenForo_Application::getSimpleCacheData('groupedSmilies');
+
+		if ($categories)
+		{
+			foreach ($categories as $category) 
+			{
+				$dw = XenForo_DataWriter::create('XenForo_DataWriter_SmilieCategory');
+
+				$dw->set('display_order', $category['display_order']);
+				$dw->setExtraData(XenForo_DataWriter_SmilieCategory::DATA_TITLE, $category['category_title']);
+				$dw->save();
+
+				$newCategory = $dw->getMergedData();
+				if (self::isFieldExists('xf_smilie', 'smilie_category_id_old'))
+				{
+					self::_getDb()->update('xf_smilie', array('smilie_category_id' => $newCategory['smilie_category_id']), 
+						'smilie_category_id_old = ' . $category['smilie_category_id']);
+				}
+				elseif (!empty($smilies[$category['smilie_category_id']]))
+				{
+					$smilieIds = array_keys($smilies[$category['smilie_category_id']]);
+					
+					self::_getDb()->update('xf_smilie', array('smilie_category_id' => $newCategory['smilie_category_id']), 
+						'smilie_id IN (' . self::_getDb()->quote($smilieIds) . ')');
+				}
+			}
 		}
 	}
 
-	protected static function _postUninstallAfterTransaction()
+	protected static function _deleteSimpleCacheData()
 	{
 		if (XenForo_Application::getSimpleCacheData('groupedSmilies'))
 		{
@@ -47,8 +87,6 @@ class Milano_SmileyManager_Install extends Milano_Common_Install
 		{
 			XenForo_Application::setSimpleCacheData('smilieCategories', false);
 		}
-
-		self::_deleteDataRegistry();
 	}
 
 	protected static function _deleteDataRegistry()

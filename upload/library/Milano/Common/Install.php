@@ -3,9 +3,11 @@
 class Milano_Common_Install
 {
 	protected static $_db;
-	protected static $existingAddOn;
-	protected static $addOnData;
+	public static $existingAddOn;
+	public static $addOnData;
+	public static $xml;
 
+	protected static $_prerequisites;
 	protected static $_tables;
 	protected static $_tablePatches;
 	protected static $_userFields;
@@ -18,16 +20,20 @@ class Milano_Common_Install
 
 	protected static $_noUninstall = false;
 
-	protected static function _construct($existingAddOn = null, $addOnData  = null)
+	protected static function _construct($existingAddOn = null, $addOnData  = null, $xml = null)
 	{
 		if (version_compare(PHP_VERSION, '5.3.0', '<'))
 		{
     		throw new XenForo_Exception('You need at least PHP version 5.3.0 to install this add-on. Your version: ' . PHP_VERSION, true);
 		}
+
+		// Todo: Require Addon
 		
 		self::$existingAddOn = $existingAddOn;
 		self::$addOnData = $addOnData;
+		self::$xml = $xml;
 
+		self::$_prerequisites = static::_getPrerequisites();
 		self::$_tables = static::_getTables();
 		self::$_tablePatches = static::_getTablePatches();
 		self::$_userFields = static::_getUserFields();
@@ -48,13 +54,18 @@ class Milano_Common_Install
 		return self::$_db;
 	}
 
-	public static final function install($existingAddOn, $addOnData)
+	public static final function install($existingAddOn, $addOnData, SimpleXMLElement $xml = null)
 	{
-		self::_construct($existingAddOn, $addOnData);
+		self::_construct($existingAddOn, $addOnData, $xml);
 
 		static::_preInstallBeforeTransaction();
 		self::_getDb()->beginTransaction();
 		static::_preInstall();
+
+        if (!empty(self::$_prerequisites)) 
+        {
+            self::checkPrerequisites(self::$_prerequisites);
+        }
 
 		$fieldNameChanges = static::_getInstallFieldNameChanges();
 		if (!empty($fieldNameChanges))
@@ -145,7 +156,7 @@ class Milano_Common_Install
 
 		if (!empty(self::$_tablePatches))
 		{
-			self::dropTableChanges(self::$_tablePatches);
+			self::dropTablePatches(self::$_tablePatches);
 		}
 
 		if (!empty(self::$_userFields))
@@ -168,11 +179,20 @@ class Milano_Common_Install
 		static::_postUninstallAfterTransaction();
 	}
 
+	public static function checkXfVersion($versionId, $versionString)
+	{
+		if (XenForo_Application::$versionId < $versionId)
+		{
+			throw new XenForo_Exception('This add-on requires XenForo ' . $versionString . ' or higher.', true);
+		}
+	}
+
 	public static final function isAddOnInstalled($addOnId)
     {
         $addOnModel = XenForo_Model::create('XenForo_Model_AddOn');
+        $addOn = $addOnModel->getAddOnById($addOnId);
 
-        return ($addOnModel->getAddOnById($addOnId));
+        return $addOn;
     }
 
 	public static final function isFieldExists($table, $field)
@@ -192,6 +212,32 @@ class Milano_Common_Install
 		}
 		catch (Zend_Db_Exception $e) {}
 	}
+
+	public static function checkPrerequisites(array $prerequisites)
+    {
+        $notInstalled = array();
+        $outOfDate = array();
+        foreach ($prerequisites as $addOnId => $versionId) 
+        {
+            $addOn = self::isAddOnInstalled($addOnId);
+            if (!$addOn) 
+            {
+                $notInstalled[] = $addOnId;
+            }
+            if ($addOn['version_id'] < $versionId) 
+            {
+                $outOfDate[] = $addOnId;
+            }
+        }
+        if ($notInstalled) 
+        {
+            throw new XenForo_Exception('The following required add-ons need to be installed: ' . implode(',', $notInstalled), true);
+        }
+        if ($outOfDate) 
+        {
+            throw new XenForo_Exception('The following required add-ons need to be updated: ' . implode(',', $outOfDate), true);
+        }
+    }
 
 	public static function makeFieldChanges(array $fieldChanges)
     {
@@ -264,6 +310,7 @@ class Milano_Common_Install
                 }
                 $sql .= implode(",", $sqlRows);
                 $sql .= ") ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci";
+
 				try
 				{
 					self::_getDb()->query($sql);
@@ -302,6 +349,10 @@ class Milano_Common_Install
 				
 				$sql = "ALTER IGNORE TABLE `".$tableName."` ";
 				$sqlQuery = array();
+				if (isset($tableSql['EXTRA']))
+                {
+                	unset($tableSql['EXTRA']);
+                }
 				foreach ($tableSql as $rowName => $rowParams)
 				{
 					if (strpos($rowParams, 'PRIMARY KEY') !== false)
@@ -373,7 +424,7 @@ class Milano_Common_Install
 		}
 	}
 
-	public static function dropTableChanges(array $tables)
+	public static function dropTablePatches(array $tables)
 	{
 		foreach ($tables as $tableName => $tableSql)
 		{		
@@ -385,7 +436,7 @@ class Milano_Common_Install
 				{
 					try
 					{
-						self::_getDb()->query("ALTER TABLE `" . $tableName . "` DROP `" . $rowName);
+						self::_getDb()->query("ALTER TABLE " . $tableName . " DROP " . $rowName); 
 					}
 					catch (Zend_Db_Exception $e) {}
 				}
@@ -614,6 +665,11 @@ class Milano_Common_Install
 	{
 		return array();
 	}
+
+	protected static function _getPrerequisites()
+    {
+        return array();
+    } 
 
 	protected static function _getTables()
 	{
