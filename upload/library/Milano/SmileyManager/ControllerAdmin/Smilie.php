@@ -69,6 +69,14 @@ class Milano_SmileyManager_ControllerAdmin_Smilie extends XFCP_Milano_SmileyMana
 			}
 		}
 
+		if ($input['mode'] == 'directory')
+		{
+			foreach ($response->params['smilies'] as $smilieId => &$smilie) 
+			{
+				$smilie['smilie_text'] = ':' . strtolower($smilie['title']) . ':';
+			}
+		}
+
 		return $response;
 	}
 

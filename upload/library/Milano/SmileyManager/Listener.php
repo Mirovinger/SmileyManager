@@ -17,6 +17,18 @@ class Milano_SmileyManager_Listener
 		$extend[] = 'Milano_SmileyManager_DataWriter_User';
 	}
 
+    public static function loadBbCodeBase($class, array &$extend)
+    {
+        //$extend[] = 'Milano_SmileyManager_BbCode_Formatter_Base';
+    }
+
+    public static function initDependencies(XenForo_Dependencies_Abstract $dependencies, array $data)
+    {        
+        XenForo_Template_Helper_Core::$helperCallbacks += array(
+            'parsesmilies' => array('Milano_SmileyManager_Helper_Smilie', 'parseSmilies'),
+        );
+    }
+
 	public static function templateEditorCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
     {        
         if (self::_assertQuickloadSmileyEnabled())

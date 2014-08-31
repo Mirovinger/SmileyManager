@@ -8,7 +8,7 @@ class Milano_SmileyManager_DataWriter_User extends XFCP_Milano_SmileyManager_Dat
 		
 		$fields['xf_user_option']['quickload_smiley'] = array(
 			'type' => self::TYPE_BOOLEAN,
-			'default' => 1
+			'default' => 0
 		);
 		
 		return $fields;

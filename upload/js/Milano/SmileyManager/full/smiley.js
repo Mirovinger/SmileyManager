@@ -21,10 +21,15 @@
 			var imgInput          = new spriteCow.ImgInput( $canvasContainer, $canvasContainer, $imageUrl.val() );
 			var cssOutput         = new spriteCow.CssOutput( $codeContainer );
 			var toolbarTop        = new spriteCow.Toolbar('.toolbar-container');
+			var toolbarBottom     = new spriteCow.Toolbar('.toolbar-bottom-container');
+
+			var $lockHeightInput = $('#lockHeight').appendTo('body').hide();
+			var $lockWidthInput = $('#lockWidth').appendTo('body').hide();
+
 
 			toolbarTop.
 				addItem('add-smiley', XenForo.phrases.add_smiley).
-				addItem('reload-img', XenForo.phrases.reload_current_image, {noLabel: true}).
+				//addItem('reload-img', XenForo.phrases.reload_current_image, {noLabel: true}).
 				//addItem('select-sprite', XenForo.phrases.select_sprite, {active: true}).
 				addItem(
 					new spriteCow.ToolbarGroup().
@@ -33,9 +38,19 @@
 				).
 				addItem('invert-bg', XenForo.phrases.toggle_dark_background, {noLabel: true});
 
+			toolbarBottom.
+				addItem('auto-resize', 'Auto resize', {active: true, noLabel: true}).
+				addItem('lock-height', 'Lock-on height', {noLabel: true}).
+				addItem('lock-width', 'Lock-on width', {noLabel: true});
+
 			toolbarTop.$container.addClass('top');
+			toolbarBottom.$container.addClass('bottom');
 
 			spriteCow.pageLayout.init();
+
+			localStorage.setItem('autoResize', 'on');
+			localStorage.setItem('lockHeight', 0);
+			localStorage.setItem('lockWidth', 0);
 
 			// listeners
 			imgInput.bind('load', function(img) {
@@ -103,10 +118,10 @@
 				spriteCanvasView.setTool('select-sprite');
 			});
 			
-			toolbarTop.bind('reload-img', function(event) {
+			/*toolbarTop.bind('reload-img', function(event) {
 				imgInput.reloadLastFile();
 				event.preventDefault();
-			});
+			});*/
 			
 			toolbarTop.bind('invert-bg', function(event) {
 				if ( event.isActive ) {
@@ -117,7 +132,42 @@
 				}
 			});
 
+			toolbarBottom.bind('auto-resize', function(event) {
+				if ( event.isActive ) {
+					localStorage.setItem('autoResize', 'off');
+				}
+				else {
+					localStorage.setItem('autoResize', 'on');
+				}
+			});
+
+			toolbarBottom.bind('lock-height', function(event) {
+				if ( !event.isActive ) {
+					$lockHeightInput.insertBefore(toolbarBottom._$feedback).show();
+				}
+				else {
+					XenForo.SmileySpriteCow.updateInput('lockHeight', $lockHeightInput.val());
+					$lockHeightInput.appendTo('body').hide();
+				}
+			});
+
+			toolbarBottom.bind('lock-width', function(event) {
+				if ( !event.isActive ) {
+					$lockWidthInput.insertBefore(toolbarBottom._$feedback).show();
+				}
+				else {
+					XenForo.SmileySpriteCow.updateInput('lockWidth', $lockWidthInput.val());
+					$lockWidthInput.appendTo('body').hide();
+				}
+			});
+
 			imgInput.loadImgUrl($imageUrl.val());
+		},
+
+		updateInput: function(name, value)
+		{
+			val = $.isNumeric(value) ? parseInt(value) : 0;
+			localStorage.setItem(name, val);
 		},
 
 		colourBytesToCss: function(color)
