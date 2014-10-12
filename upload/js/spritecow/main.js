@@ -1,1 +1,1213 @@
-var spriteCow={};spriteCow.MicroEvent=function(){},spriteCow.MicroEvent.prototype={bind:function(a,b){this._events=this._events||{},this._events[a]=this._events[a]||[],this._events[a].push(b)},unbind:function(a,b){this._events=this._events||{},a in this._events!=!1&&this._events[a].splice(this._events[a].indexOf(b),1)},trigger:function(a){var b,c;if(a instanceof $.Event?(b=a.type,c=Array.prototype.slice.call(arguments,0)):(b=a,c=Array.prototype.slice.call(arguments,1)),this._events=this._events||{},b in this._events==!1)return a;for(var d=0,e=this._events[b].length;e>d;d++)this._events[b][d].apply(this,c);return a}},spriteCow.Rect=function(){function a(a,b,c,d){this.x=a,this.y=b,this.width=c,this.height=d}return a.prototype,a}(),spriteCow.ImgInput=function(){function a(a,b){var d=this;$('<div class="drop-indicator"></div>').appendTo(b),d.fileName="example.png",d._addDropEvents(b)}var b=a.prototype=new spriteCow.MicroEvent;return b._openFileAsImg=function(a){var b=this,c=new FileReader;b._lastFile=a,b.fileName=a.fileName||a.name,c.onload=function(){b.loadImgUrl(c.result)},c.readAsDataURL(a)},b._addDropEvents=function(a){var b=a[0],c=this;b.addEventListener("dragenter",function(a){a.stopPropagation(),a.preventDefault()},!1),b.addEventListener("dragover",function(b){b.stopPropagation(),b.preventDefault(),a.addClass("drag-over")},!1),b.addEventListener("dragleave",function(b){b.stopPropagation(),b.preventDefault(),a.removeClass("drag-over")},!1),b.addEventListener("drop",function(b){b.stopPropagation(),b.preventDefault(),a.removeClass("drag-over");var d=b.dataTransfer.files[0];d&&"image"===d.type.slice(0,5)&&c._openFileAsImg(d)},!1)},b.loadImgUrl=function(a){var b=this,c=new Image;c.onload=function(){b.trigger("load",c)},c.src=a},b.reloadLastFile=function(){this._lastFile&&this._openFileAsImg(this._lastFile)},a}(),spriteCow.SpriteCanvas=function(){function a(a,b,c,d){if(0===a[b+3]&&0===c[d+3])return!0;for(var e=4;e--;)if(a[b+e]!==c[d+e])return!1;return!0}function b(a,b){for(var c=a.length;c--;)if(!a[c]&&!b[c])return!1;return!0}function c(a){for(var b=a.length;b--;)if(a[b])return!1;return!0}function d(){var a=$("<canvas/>")[0];this.canvas=a,this._context=a.getContext("2d"),this._bgData=[0,0,0,0]}var e=d.prototype=new spriteCow.MicroEvent;return e.setImg=function(a){var b=this.canvas,c=this._context;b.width=a.width,b.height=a.height,c.drawImage(a,0,0),this._img=a},e.setBg=function(a){this._bgData=a},e.getBg=function(){return this._bgData},e.trimBg=function(a){var b;if(a=this._restrictRectToBoundry(a),a.width&&a.height)do b=this._edgesAreBg(a),a=this._contractRect(a,b);while(a.height&&a.width&&!c(b));return a},e._restrictRectToBoundry=function(a){var b=this.canvas,c=Math.min(Math.max(a.x,0),b.width),d=Math.min(Math.max(a.y,0),b.height);return c!==a.x&&(a.width-=c-a.x,a.x=c),d!==a.y&&(a.height-=d-a.y,a.y=d),a.width=Math.min(a.width,b.width-a.x),a.height=Math.min(a.height,b.height-a.y),a},e.expandToSpriteBoundry=function(a){for(var d=this._edgesAreBg(a),e=this._edgesAtBounds(a);!b(d,e);)a=this._expandRect(a,d,e),d=this._edgesAreBg(a),e=this._edgesAtBounds(a);return a=this._contractRect(a,d)},e._edgesAreBg=function(a){var c=(this.canvas,this._context),d=c.getImageData(a.x,a.y,a.width,1).data,e=c.getImageData(a.x+a.width-1,a.y,1,a.height).data,f=c.getImageData(a.x,a.y+a.height-1,a.width,1).data,g=c.getImageData(a.x,a.y,1,a.height).data;return[this._pixelsContainOnlyBg(d),this._pixelsContainOnlyBg(e),this._pixelsContainOnlyBg(f),this._pixelsContainOnlyBg(g)]},e._edgesAtBounds=function(a){var b=this.canvas;return[0===a.y,a.x+a.width===b.width,a.y+a.height===b.height,0===a.x]},e._pixelsContainOnlyBg=function(b){for(var c=this._bgData,d=0,e=b.length;e>d;d+=4)if(!a(c,0,b,d))return!1;return!0},e._expandRect=function(a,b,c){return b[0]||c[0]||(a.y--,a.height++),b[1]||c[1]||a.width++,b[2]||c[2]||a.height++,b[3]||c[3]||(a.x--,a.width++),a},e._contractRect=function(a,b){return b[0]&&a.height&&(a.y++,a.height--),b[1]&&a.width&&a.width--,b[2]&&a.height&&a.height--,b[3]&&a.width&&(a.x++,a.width--),a},d}(),function(){var a=function(){function a(a){this._$container=$('<div class="highlight"/>').appendTo(a)}var b=a.prototype;return b.moveTo=function(a,b){var c=this._$container.transitionStop(!0),d={left:a.x,top:a.y,width:a.width,height:a.height,opacity:1};a.width&&a.height?(c.css("display","block"),b?c.transition(d,{duration:200,easing:"easeOutQuad"}):c.vendorCss(d)):this.hide(b)},b.hide=function(a){var b=this._$container.transitionStop(!0);if(a){var c=parseInt(b.css("left")),d=parseInt(b.css("top"));b.transition({left:c+b.width()/2,top:d+b.height()/2,width:0,height:0,opacity:0},{duration:200,easing:"easeInQuad"})}else b.css("display","none")},b.setHighVisOnDark=function(a){return this._$container[a?"addClass":"removeClass"]("high-vis"),this},a}(),b=function(){function a(a,b){this._$canvas=b,this._$eventArea=a,this._context=b[0].getContext("2d"),this._listeners=[]}var b=a.prototype=new spriteCow.MicroEvent;return b.activate=function(){var a=this,e=(a._context,a._$eventArea);return a._listeners.push([e,"mousedown",function(b){if(0===b.button){var c=a._getColourAtMouse(b.pageX,b.pageY);a.trigger("select",c),b.preventDefault()}}]),a._listeners.push([e,"mousemove",function(b){var c=a._getColourAtMouse(b.pageX,b.pageY);a.trigger("move",c)}]),a._listeners.forEach(function(a){a[0].bind.apply(a[0],a.slice(1))}),a},b.deactivate=function(){return this._listeners.forEach(function(a){a[0].unbind.apply(a[0],a.slice(1))}),this},b._getColourAtMouse=function(a,b){var c=this._$canvas.offset(),d=a-Math.floor(c.left),e=b-Math.floor(c.top);return this._context.getImageData(d,e,1,1).data},a}(),c=function(){function a(a,b,c){this._$area=b,this._$eventArea=a,this._highlight=c,this._listeners=[]}var b=a.prototype=new spriteCow.MicroEvent;return b.activate=function(){var c,d,e,f,g,a=this,b=new spriteCow.Rect(0,0,0,0),h=$(document);return a._listeners.push([a._$eventArea,"mousedown",function(h){if(0===h.button){var i=a._$area.offset();c=h.pageX,d=h.pageY,e=Math.floor(h.pageX-i.left),f=Math.floor(h.pageY-i.top),b=new spriteCow.Rect(e,f,1,1),a._highlight.moveTo(b),g=!0,h.preventDefault()}}]),a._listeners.push([h,"mousemove",function(h){g&&(b.x=e+Math.min(h.pageX-c,0),b.y=f+Math.min(h.pageY-d,0),b.width=Math.abs(h.pageX-c)||1,b.height=Math.abs(h.pageY-d)||1,a._highlight.moveTo(b))}]),a._listeners.push([h,"mouseup",function(){g&&(g=!1,a.trigger("select",b))}]),a._listeners.forEach(function(a){a[0].bind.apply(a[0],a.slice(1))}),a},b.deactivate=function(){return this._listeners.forEach(function(a){a[0].unbind.apply(a[0],a.slice(1))}),this},a}();spriteCow.SpriteCanvasView=function(){function d(d,e){var f=this,g=$('<div class="sprite-canvas-container"/>'),h=$(d.canvas).appendTo(g),i=new a(g),j=new c(g,h,i),k=new b(h,h);this._$container=g,this._$bgElm=e,this._spriteCanvas=d,this._highlight=i,this._selectArea=j,this._selectColor=k,g.appendTo(e),j.bind("select",function(a){var b=d.trimBg(a);b.width&&b.height?(b=d.expandToSpriteBoundry(a),f._setCurrentRect(b)):i.hide(!0)}),k.bind("select",function(a){f.trigger("bgColorSelect",a),f.setBg(XenForo.SmileySpriteCow.colourBytesToCss(a))}),k.bind("move",function(a){f.trigger("bgColorHover",a)})}var e=d.prototype=new spriteCow.MicroEvent;return e._setCurrentRect=function(a){this._highlight.moveTo(a,!0),this.trigger("rectChange",a)},e.setTool=function(a){var b=this._selectArea,c=this._selectColor;switch(this._highlight.hide(),b.deactivate(),c.deactivate(),a){case"select-sprite":b.activate();break;case"select-bg":c.activate()}},e.setBg=function(a){$.support.transition?this._$bgElm.transition({"background-color":a},{duration:500}):this._$bgElm.css({"background-color":a}),this._highlight.setHighVisOnDark("#000"===a)},d}()}(),function(){function a(a){var b=$('<input type="text"/>').appendTo(a),c=this;c._$input=b,c._$editing=null,c._inputBoxOffset={top:-parseInt(b.css("padding-top"),10)-parseInt(b.css("border-top-width"),10),left:-parseInt(b.css("padding-left"),10)-parseInt(b.css("border-left-width"),10)},b.hide(),a.on("click","[data-inline-edit]",function(a){var b=$(a.target),d=c._$editing;d&&b[0]===d[0]||(c.edit(b),a.preventDefault())}),b.blur(function(){c.finishEdit()}).keyup(function(a){13===a.keyCode&&(b[0].blur(),a.preventDefault())})}var b=a.prototype=new spriteCow.MicroEvent;b.edit=function(a){a=$(a);var b=a.position();this._$editing&&this.finishEdit(),this._$editing=a,this._$input.show().css({top:b.top+this._inputBoxOffset.top,left:b.left+this._inputBoxOffset.left,width:Math.max(a.width(),50)}).val(a.text()).focus()},b.finishEdit=function(){if(this._$editing){var a=this._$input.hide().val(),b=new $.Event(this._$editing.data("inlineEdit"));b.val=a,this.trigger(b),this._$editing=null}},spriteCow.InlineEdit=a}(),spriteCow.CssOutput=function(){function a(a,b){return a=Math.round(a),b?a:a?a+"px":"0"}function b(a){return a?c(100*a,3)+"%":"0"}function c(a,b){var c=Math.pow(10,b||0);return Math.round(a*c)/c}function d(a){var b=$('<div class="css-output"></div>').appendTo(a);this._$container=b,this._$code=$("<code>\n\n\n\n\n</code>").appendTo(b),this.backgroundFileName="",this.path="cssOutputPath"in localStorage?localStorage.getItem("cssOutputPath"):"imgs/",this.rect=new spriteCow.Rect(0,0,0,0),this.imgWidth=0,this.imgHeight=0,this.scaledWidth=0,this.scaledHeight=0,this.useTabs=!0,this.useBgUrl=!0,this.percentPos=!1,this.bgSize=!1,this.selector=".sprite",this._addEditEvents(),this.output={}}var e=d.prototype;return e.update=function(){var h,c=this.useTabs?"	":"    ",d=this.rect,e=this._$code,f=this.bgSize?this.scaledWidth/this.imgWidth:1,g=this.bgSize?this.scaledHeight/this.imgHeight:1,i=$("#DataSource").val();e.empty().append($('<span class="selector"/>').text(this.selector)).append(" {\n"),this.useBgUrl&&this.backgroundFileName?(e.append(c+"background: url('"),h=$('<span class="file"/>').append($('<span class="file-name"/>').text(i)),e.append(h).append("') no-repeat ")):e.append(c+"background-position: "),this.percentPos?e.append('<span id="spriteX">'+b(d.x/-(d.width-this.imgWidth))+"</span> "+'<span id="spriteY">'+b(d.y/-(d.height-this.imgHeight))+"</span>;\n"):e.append('<span id="spriteX">'+a(-d.x*f)+"</span> "+'<span id="spriteY">'+a(-d.y*g)+"</span>;\n"),this.bgSize&&e.append(c+"background-size: "+a(this.scaledWidth)+" "+a(this.scaledHeight)+";\n"),e.append(c+'width: <span id="spriteWidth">'+a(d.width*f)+"</span>;\n"+c+'height: <span id="spriteHeight">'+a(d.height*g)+"</span>;\n"+"}"),$.extend(this.output,{width:a(d.width*f,!0),height:a(d.height*g,!0),x:a(-d.x*f,!0),y:a(-d.y*g,!0)})},e._addEditEvents=function(){var a=this;new spriteCow.InlineEdit(a._$container).bind("file-path",function(b){var c=b.val;a.path=c,a.update(),localStorage.setItem("cssOutputPath",c)})},d}(),spriteCow.Toolbar=function(){function a(a){var b=this,c=$('<div class="toolbar"><span class="feedback"></span></div>').appendTo(a);c.on("mouseenter","div[role=button]",function(){var a=$(this);b.feedback(a.hasClass("no-label")?a.text():"")}),c.on("click","div[role=button]",function(){var a=$(this),c=a.data("toolName"),d=new $.Event(c);d.isActive=a.hasClass("active"),b.trigger(d).isDefaultPrevented()||(d.isActive?b.deactivate(c):b.activate(c)),d.preventDefault()}),b.$container=c,b._$feedback=c.find("span.feedback")}a.createButton=function(a,b,c){c=c||{};var d=$('<div role="button"/>').addClass(a).text(b).data("toolName",a);return c.noLabel&&d.addClass("no-label"),c.active&&d.addClass("active"),d};var b=a.prototype=new spriteCow.MicroEvent;return b.addItem=function(b,c,d){return b instanceof spriteCow.ToolbarGroup?this._$feedback.before(b.$container):a.createButton(b,c,d).insertBefore(this._$feedback),this},b.feedback=function(a,b){var c=this._$feedback,d="#555";return c.transitionStop(!0).text(a).css({opacity:.999,color:d,"font-weight":"normal"}),b?(c.css("font-weight","bold"),$.support.transition?c.transition({color:"red"},{duration:3e3}):c.css("color","red")):c.animate({_:0},3e3),c.transition({opacity:0},{duration:2e3}),this},b.activate=function(a){var b=this.$container.find("."+a+"[role=button]");return b.closest(".toolbar-group").children().removeClass("active"),b.addClass("active"),this},b.deactivate=function(a){return this.$container.find("."+a+"[role=button]").removeClass("active"),this},b.isActive=function(a){return this.$container.find("."+a+"[role=button]").hasClass("active")},a}(),function(){function a(){this.$container=$('<div class="toolbar-group"/>')}var b=a.prototype;b.addItem=function(a,b,c){return spriteCow.Toolbar.createButton(a,b,c).appendTo(this.$container),this},spriteCow.ToolbarGroup=a}(),spriteCow.pageLayout=function(){function k(){var b=40,c=a.width()/(g.width()-b);return Math.round(1e4*c)/100+"%"}function l(){var g,j=k();return a.removeClass("intro"),g=[{duration:300,easing:"easeInOutQuad",targets:[[a,{width:"100%"}],[e,{opacity:0}]],before:function(){a.width(j),c.scrollTop(0)}},{duration:500,easing:"easeInOutQuad",targets:[[a,{width:"100%"}],[d,{height:d.height(),"padding-top":d.css("padding-top"),"padding-bottom":d.css("padding-bottom")}],[b,{height:b.height()}],[h,{height:h.height(),"padding-top":h.css("padding-top"),"padding-bottom":h.css("padding-bottom"),"border-top-width":h.css("border-top-width"),"border-bottom-width":h.css("border-bottom-width")}],[i,{height:i.height(),"padding-top":i.css("padding-top"),"padding-bottom":i.css("padding-bottom"),"border-top-width":i.css("border-top-width"),"border-bottom-width":i.css("border-bottom-width")}]],before:function(){}},{duration:500,easing:"swing",targets:[[f,{opacity:1}]]}],a.addClass("intro"),g}function m(a,b,c){function h(){d?m(a,b+1,c):c()}var d=a[b+1],e=a[b],f=e.duration,g=e.easing;e.before&&e.before(),e.targets.forEach(function(a,b){a[0].transition(a[1],{duration:f,easing:g,complete:b?$.noop:h})})}var d,e,f,h,i,a=$(".container"),b=$(".canvas-cell"),c=$(".canvas-inner"),g=$(window),j="intro";return{init:function(){h=$(".toolbar.top"),i=$(".toolbar.bottom"),e=$(".start-buttons"),d=$(".css-output"),f=$(".sprite-canvas-container")},toAppView:function(){if("app"!==j){var b=l();j="app",$.support.transition?m(b,0,function(){var c=[];a.removeClass("intro"),b.forEach(function(a){c=c.concat(a.targets)}),c.forEach(function(a){for(var b in a[1])a[0].css(b,"")})}):a.removeClass("intro")}}}}(),spriteCow.FeatureTest=function(){function a(a){var b=$('<div class="feature-test-results" />'),c=$("<ul/>");this._$container=b.appendTo(a),this._$results=c.appendTo(b),this.allPassed=!0}var b=a.prototype;return b.addResult=function(a,b){this.allPassed=this.allPassed&&a,$("<li/>").text(b).prepend(a?'<span class="pass">pass</span> ':'<span class="fail">fail</span> ').appendTo(this._$results)},a}(),spriteCow.featureTests=function(a){function d(){return!!a.createElement("canvas").getContext}function e(){return!(!window.File||!window.FileReader)}function f(){return!!b.addEventListener}var b=a.createElement("a"),c=a.documentElement,g=new spriteCow.FeatureTest($(".feature-test"));return g.addResult(d(),"<canvas> element"),g.addResult(e(),"File & FileReader"),g.addResult(f(),"addEventListener on elements"),$.browser.opera&&(c.className+=" opera"),g}(document),spriteCow.XenForoSmiley=function(){function a(a){$.extend(a,{key:i}),XenForo.SmileySpriteCow.add(a),i++}return i=1,a}();
+// intro
+var spriteCow = {};
+
+// MicroEvent
+spriteCow.MicroEvent = function(){};
+spriteCow.MicroEvent.prototype = {
+	bind: function(event, fct){
+		this._events = this._events || {};
+		this._events[event] = this._events[event] || [];
+		this._events[event].push(fct);
+	},
+	unbind: function(event, fct){
+		this._events = this._events || {};
+		if( event in this._events === false ) { return; }
+		this._events[event].splice(this._events[event].indexOf(fct), 1);
+	},
+	trigger: function(event /* , args... */) {
+		var eventName,
+			args;
+
+		if (event instanceof $.Event) {
+			eventName = event.type;
+			args = Array.prototype.slice.call(arguments, 0);
+		}
+		else {
+			eventName = event;
+			args = Array.prototype.slice.call(arguments, 1);
+		}
+		this._events = this._events || {};
+
+		if ( eventName in this._events === false  ) { return event; }
+
+		for (var i = 0, len = this._events[eventName].length; i < len; i++) {
+			this._events[eventName][i].apply( this, args );
+		}
+
+		return event;
+	}
+};
+
+// Rect
+spriteCow.Rect = (function() {
+	function Rect(x, y, width, height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+	}
+	
+	var RectProto = Rect.prototype;
+	
+	return Rect;
+})();
+
+// ImgInput
+spriteCow.ImgInput = (function() {
+	function ImgInput($container, $dropZone, tutorialUrl) {
+		var imgInput = this,
+			//$fileInput = $('<input type="file" accept="image/*" class="upload-input">').appendTo( document.body ),
+			/*$buttons = $('<div class="start-buttons"/>').appendTo( $container ),
+			$selectButton = $('<div role="button" class="select-btn lg-button">Open Image</div>').appendTo( $buttons ),
+			$demoButton = $('<div role="button" class="demo-btn lg-button">Show Example</div>').appendTo( $buttons ),*/
+			$dropIndicator = $('<div class="drop-indicator"></div>').appendTo( $dropZone );
+
+		imgInput.fileName = 'example.png';
+		//imgInput._fileInput = $fileInput[0];
+		imgInput._addDropEvents($dropZone);
+		//imgInput._lastFile = undefined;
+		
+		/*$fileInput.change(function(event) {
+			var file = this.files[0];
+			file && imgInput._openFileAsImg(file);
+			this.value = '';
+		});
+		
+		imgInput.fileClickjackFor( $selectButton );
+		
+		$demoButton.click(function(event) {
+			imgInput.loadImgUrl( tutorialUrl );
+			event.preventDefault();
+		});*/
+		
+	}
+	
+	var ImgInputProto = ImgInput.prototype = new spriteCow.MicroEvent;
+	
+	ImgInputProto._openFileAsImg = function(file) {
+		var imgInput = this,
+			reader = new FileReader;
+		
+		imgInput._lastFile = file;
+		imgInput.fileName = file.fileName || file.name;
+		
+		reader.onload = function() {
+			imgInput.loadImgUrl(reader.result);
+		};
+		reader.readAsDataURL(file);
+	};
+	
+	ImgInputProto._addDropEvents = function($dropZone) {
+		var dropZone = $dropZone[0],
+			imgInput = this;
+
+		dropZone.addEventListener('dragenter', function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+		}, false);
+		
+		dropZone.addEventListener('dragover', function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			$dropZone.addClass('drag-over');
+		}, false);
+		
+		dropZone.addEventListener('dragleave', function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			$dropZone.removeClass('drag-over');
+		}, false);
+		
+		dropZone.addEventListener('drop', function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			$dropZone.removeClass('drag-over');
+			var file = event.dataTransfer.files[0];
+			
+			if ( file && file.type.slice(0,5) === 'image' ) {
+				imgInput._openFileAsImg(file);
+			}
+		}, false);
+	};
+	
+	ImgInputProto.loadImgUrl = function(url) {
+		var imgInput = this,
+			img = new Image;
+		
+		img.onload = function() {
+			imgInput.trigger('load', img);
+		};
+		img.src = url;
+	};
+	
+	ImgInputProto.reloadLastFile = function() {
+		this._lastFile && this._openFileAsImg( this._lastFile );
+	};
+	
+	/*ImgInputProto.fileClickjackFor = function( $elm ) {
+		$elm.fileClickjack( this._fileInput );
+	};*/
+	
+	return ImgInput;
+})();
+
+// SpriteCanvas
+
+spriteCow.SpriteCanvas = (function() {
+	function pixelsEquivalent(pixels1, offset1, pixels2, offset2) {
+		if ( pixels1[offset1 + 3] === 0 && pixels2[offset2 + 3] === 0 ) {
+			// if both have alpha zero, they're the same
+			return true;
+		}
+		// otherwise only true if both pixels have equal RGBA vals
+		for (var i = 4; i--;) if ( pixels1[offset1 + i] !== pixels2[offset2 + i] ) {
+			return false;
+		}
+		return true;
+	};
+	
+	function allArrayOrTrue(arr1, arr2) {
+		for (var i = arr1.length; i--;) if ( !( arr1[i] || arr2[i] ) ) {
+			return false;
+		}
+		return true;
+	}
+	
+	function allArrayFalse(arr1) {
+		for (var i = arr1.length; i--;) if ( arr1[i] ) {
+			return false;
+		}
+		return true;
+	}
+	
+	function SpriteCanvas() {
+		var canvas = $('<canvas/>')[0];
+		this.canvas = canvas;
+		this._context = canvas.getContext('2d');
+		this._bgData = [0, 0, 0, 0];
+	}
+	
+	var SpriteCanvasProto = SpriteCanvas.prototype = new spriteCow.MicroEvent;
+	
+	SpriteCanvasProto.setImg = function(img) {
+		var canvas = this.canvas,
+			context = this._context;
+
+		canvas.width = img.width;
+		canvas.height = img.height;
+		
+		context.drawImage(img, 0, 0);
+		
+		this._img = img;
+	};
+	
+	SpriteCanvasProto.setBg = function(pixelArr) {
+		this._bgData = pixelArr;
+	};
+	
+	SpriteCanvasProto.getBg = function() {
+		return this._bgData;
+	};
+	
+	SpriteCanvasProto.trimBg = function(rect) {
+		var edgeBgResult;
+		
+		rect = this._restrictRectToBoundry(rect);
+		
+		if (rect.width && rect.height) do {
+			edgeBgResult = this._edgesAreBg(rect);
+			rect = this._contractRect(rect, edgeBgResult);
+		} while ( rect.height && rect.width && !allArrayFalse(edgeBgResult) );
+		
+		return rect;
+	};
+	
+	SpriteCanvasProto._restrictRectToBoundry = function(rect) {
+		var canvas = this.canvas,
+			restrictedX = Math.min( Math.max(rect.x, 0), canvas.width ),
+			restrictedY = Math.min( Math.max(rect.y, 0), canvas.height );
+		
+		if (restrictedX !== rect.x) {
+			rect.width -= restrictedX - rect.x;
+			rect.x = restrictedX;
+		}
+		if (restrictedY !== rect.y) {
+			rect.height -= restrictedY - rect.y;
+			rect.y = restrictedY;
+		}
+		rect.width  = Math.min(rect.width,  canvas.width - rect.x);
+		rect.height = Math.min(rect.height, canvas.height - rect.y);
+		return rect;
+	}
+	
+	SpriteCanvasProto.expandToSpriteBoundry = function(rect, callback) {
+		var edgeBgResult = this._edgesAreBg(rect),
+			edgeBoundsResult = this._edgesAtBounds(rect);
+			
+		// expand
+		while ( !allArrayOrTrue(edgeBgResult, edgeBoundsResult) ) {
+			rect = this._expandRect(rect, edgeBgResult, edgeBoundsResult);
+			edgeBgResult = this._edgesAreBg(rect);
+			edgeBoundsResult = this._edgesAtBounds(rect);
+			// callback(); // for debugging
+		}
+		
+		// trim edges of bg
+		rect = this._contractRect(rect, edgeBgResult);
+		
+		return rect;
+	};
+	
+	SpriteCanvasProto._edgesAreBg = function(rect) {
+		// look at the pixels around the edges
+		var canvas = this.canvas,
+			context = this._context,
+			top    = context.getImageData(rect.x, rect.y, rect.width, 1).data,
+			right  = context.getImageData(rect.x + rect.width - 1, rect.y, 1, rect.height).data,
+			bottom = context.getImageData(rect.x, rect.y + rect.height - 1, rect.width, 1).data,
+			left   = context.getImageData(rect.x, rect.y, 1, rect.height).data;
+			
+		
+		return [
+			this._pixelsContainOnlyBg(top),
+			this._pixelsContainOnlyBg(right),
+			this._pixelsContainOnlyBg(bottom),
+			this._pixelsContainOnlyBg(left)
+		];
+	};
+	
+	SpriteCanvasProto._edgesAtBounds = function(rect) {
+		var canvas = this.canvas;
+		
+		return [
+			rect.y === 0,
+			rect.x + rect.width === canvas.width,
+			rect.y + rect.height === canvas.height,
+			rect.x === 0
+		];
+	};
+	
+	SpriteCanvasProto._pixelsContainOnlyBg = function(pixels) {
+		var bg = this._bgData;
+		
+		for (var i = 0, len = pixels.length; i < len; i += 4) {
+			if ( !pixelsEquivalent(bg, 0, pixels, i) ) {
+				return false;
+			}
+		}
+		return true;
+	};
+	
+	SpriteCanvasProto._expandRect = function(rect, edgeBgResult, edgeBoundsResult) {
+		if ( !edgeBgResult[0] && !edgeBoundsResult[0] ) {
+			rect.y--;
+			rect.height++;
+		}
+		if ( !edgeBgResult[1] && !edgeBoundsResult[1] ) {
+			rect.width++;
+		}
+		if ( !edgeBgResult[2] && !edgeBoundsResult[2] ) {
+			rect.height++;
+		}
+		if ( !edgeBgResult[3] && !edgeBoundsResult[3] ) {
+			rect.x--;
+			rect.width++;
+		}
+		
+		return rect;
+	};
+	
+	SpriteCanvasProto._contractRect = function(rect, edgeBgResult) {
+		if ( edgeBgResult[0] && rect.height ) {
+			rect.y++;
+			rect.height--;
+		}
+		if ( edgeBgResult[1] && rect.width ) {
+			rect.width--;
+		}
+		if ( edgeBgResult[2] && rect.height ) {
+			rect.height--;
+		}
+		if ( edgeBgResult[3] && rect.width ) {
+			rect.x++;
+			rect.width--;
+		}
+		
+		return rect;
+	};
+	
+	return SpriteCanvas;
+})();
+
+// SpriteCanvasView
+(function() {
+	var Highlight = (function() {
+		function Highlight($appendTo) {
+			this._$container = $('<div class="highlight"/>').appendTo( $appendTo );
+		}
+		
+		var HighlightProto = Highlight.prototype;
+		
+		HighlightProto.moveTo = function(rect, animate) {
+			var $container = this._$container.transitionStop(true),
+				destination = {
+					left: rect.x,
+					top: rect.y,
+					width: rect.width,
+					height: rect.height,
+					opacity: 1
+				};
+			
+			
+			if (rect.width && rect.height) {
+				$container.css('display', 'block');
+				
+				if (animate) {
+					$container.transition(destination, {
+						duration: 200,
+						easing: 'easeOutQuad'
+					});
+				}
+				else {					
+					$container.vendorCss(destination);				
+				}
+			}
+			else {
+				this.hide(animate);
+			}
+		};
+		
+		HighlightProto.hide = function(animate) {
+			var $container = this._$container.transitionStop(true);
+			
+			if (animate) {
+				var currentLeft = parseInt( $container.css('left') ),
+					currentTop = parseInt( $container.css('top') );
+				
+				$container.transition({
+					left: currentLeft + $container.width()  / 2,
+					top:  currentTop  + $container.height() / 2,
+					width: 0,
+					height: 0,
+					opacity: 0
+				}, {
+					duration: 200,
+					easing: 'easeInQuad'
+				});
+			}
+			else {
+				$container.css('display', 'none');
+			}
+		};
+		
+		HighlightProto.setHighVisOnDark = function(highVis) {
+			this._$container[highVis ? 'addClass' : 'removeClass']('high-vis');
+			return this;
+		}
+		
+		return Highlight;
+	})();
+	
+	var SelectColor = (function() {
+		
+		function SelectColor($eventArea, $canvas) {
+			this._$canvas = $canvas;
+			this._$eventArea = $eventArea;
+			this._context = $canvas[0].getContext('2d');
+			this._listeners = [];
+		}
+		
+		var SelectColorProto = SelectColor.prototype = new spriteCow.MicroEvent;
+		
+		SelectColorProto.activate = function() {
+			var selectColor = this,
+				canvasX, canvasY,
+				context = selectColor._context,
+				$eventArea = selectColor._$eventArea;
+			
+			selectColor._listeners.push([
+				$eventArea, 'mousedown', function(event) {
+					if (event.button !== 0) { return; }
+					var color = selectColor._getColourAtMouse(event.pageX, event.pageY);
+					selectColor.trigger( 'select', color );
+					event.preventDefault();
+				}
+			]);
+			
+			selectColor._listeners.push([
+				$eventArea, 'mousemove', function(event) {
+					var color = selectColor._getColourAtMouse(event.pageX, event.pageY);
+					selectColor.trigger( 'move', color );
+				}
+			]);
+			
+			selectColor._listeners.forEach(function(set) {
+				set[0].bind.apply( set[0], set.slice(1) );
+			});
+			
+			return selectColor;
+		};
+		
+		SelectColorProto.deactivate = function() {
+			this._listeners.forEach(function(set) {
+				set[0].unbind.apply( set[0], set.slice(1) );
+			});
+			
+			return this;
+		};
+		
+		SelectColorProto._getColourAtMouse = function(pageX, pageY) {
+			var offset = this._$canvas.offset(),
+				x = pageX - Math.floor(offset.left),
+				y = pageY - Math.floor(offset.top);
+			
+			return this._context.getImageData(x, y, 1, 1).data;
+		};
+		
+		return SelectColor;
+	})();
+	
+	var SelectArea = (function() {
+		function SelectArea($eventArea, $area, highlight) {
+			this._$area = $area;
+			this._$eventArea = $eventArea;
+			this._highlight = highlight;
+			this._listeners = [];
+		}
+		
+		var SelectAreaProto = SelectArea.prototype = new spriteCow.MicroEvent;
+		
+		SelectAreaProto.activate = function() {
+			var selectArea = this,
+				rect = new spriteCow.Rect(0, 0, 0, 0),
+				startX, startY,
+				startPositionX, startPositionY,
+				isDragging,
+				$document = $(document);
+			
+			
+			selectArea._listeners.push([
+				selectArea._$eventArea, 'mousedown', function(event) {
+					if (event.button !== 0) { return; }
+					var offset = selectArea._$area.offset();
+					startX = event.pageX;
+					startY = event.pageY;
+					// firefox like coming up with fraction values from offset()
+					startPositionX = Math.floor(event.pageX - offset.left);
+					startPositionY = Math.floor(event.pageY - offset.top);
+					
+					rect = new spriteCow.Rect(
+						startPositionX,
+						startPositionY,
+						1, 1
+					);
+					
+					selectArea._highlight.moveTo(rect);
+					isDragging = true;
+					event.preventDefault();
+				}
+			]);
+			
+			selectArea._listeners.push([
+				$document, 'mousemove', function(event) {
+					if (!isDragging) { return; }
+					
+					rect.x = startPositionX + Math.min(event.pageX - startX, 0);
+					rect.y = startPositionY + Math.min(event.pageY - startY, 0);
+					rect.width = Math.abs(event.pageX - startX) || 1;
+					rect.height = Math.abs(event.pageY - startY) || 1;
+					selectArea._highlight.moveTo(rect);
+				}
+			]);
+			
+			selectArea._listeners.push([
+				$document, 'mouseup', function(event) {
+					if (!isDragging) { return; }
+					isDragging = false;
+					selectArea.trigger('select', rect);
+				}
+			]);
+			
+			selectArea._listeners.forEach(function(set) {
+				set[0].bind.apply( set[0], set.slice(1) );
+			});
+			
+			return selectArea;
+		};
+		
+		SelectAreaProto.deactivate = function() {
+			this._listeners.forEach(function(set) {
+				set[0].unbind.apply( set[0], set.slice(1) );
+			});
+			
+			return this;
+		};
+		
+		return SelectArea;
+	})();
+	
+	spriteCow.SpriteCanvasView = (function() {
+		function SpriteCanvasView(spriteCanvas, $appendToElm) {
+			var spriteCanvasView = this,
+				$container = $('<div class="sprite-canvas-container"/>'),
+				$canvas = $( spriteCanvas.canvas ).appendTo( $container ),
+				// this cannot be $appendToElm, as browsers pick up clicks on scrollbars, some don't pick up mouseup http://code.google.com/p/chromium/issues/detail?id=14204#makechanges
+				highlight = new Highlight( $container ),
+				selectArea = new SelectArea( $container, $canvas, highlight ),
+				selectColor = new SelectColor( $canvas, $canvas );
+				
+			this._$container = $container;
+			this._$bgElm = $appendToElm;
+			this._spriteCanvas = spriteCanvas;
+			this._highlight = highlight;
+			this._selectArea = selectArea;
+			this._selectColor = selectColor;
+			
+			$container.appendTo( $appendToElm );
+			
+			selectArea.bind('select', function(rect) {
+				var spriteRect = spriteCanvas.trimBg(rect);
+				if (spriteRect.width && spriteRect.height) { // false if clicked on bg pixel
+					spriteRect = spriteCanvas.expandToSpriteBoundry(rect);
+					spriteCanvasView._setCurrentRect(spriteRect);
+				}
+				else {
+					highlight.hide(true);
+				}
+			});
+			
+			selectColor.bind('select', function(color) {
+				spriteCanvasView.trigger('bgColorSelect', color);
+				spriteCanvasView.setBg(XenForo.SmileySpriteCow.colourBytesToCss(color));
+			});
+			
+			selectColor.bind('move', function(color) {
+				spriteCanvasView.trigger('bgColorHover', color);
+			});
+		}
+		
+		var SpriteCanvasViewProto = SpriteCanvasView.prototype = new spriteCow.MicroEvent;
+		
+		SpriteCanvasViewProto._setCurrentRect = function(rect) {
+			this._highlight.moveTo(rect, true);
+			this.trigger('rectChange', rect);
+		};
+		
+		SpriteCanvasViewProto.setTool = function(mode) {
+			var selectArea = this._selectArea,
+				selectColor = this._selectColor;
+			
+			this._highlight.hide();
+			selectArea.deactivate();
+			selectColor.deactivate();
+			
+			switch (mode) {
+				case 'select-sprite':
+					selectArea.activate();
+					break;
+				case 'select-bg':
+					selectColor.activate();
+					break;
+			}
+		};
+		
+		SpriteCanvasViewProto.setBg = function(color) {
+			if ( $.support.transition ) {
+				this._$bgElm.transition({ 'background-color': color }, {
+					duration: 500
+				});								
+			}
+			else {
+				this._$bgElm.css({ 'background-color': color });
+			}
+			
+			this._highlight.setHighVisOnDark( color === '#000' );
+		};
+		
+		return SpriteCanvasView;
+	})();
+	
+})();
+
+// InlineEdit
+(function() {
+	function InlineEdit( $toWatch ) {
+		var $input = $('<input type="text"/>').appendTo( $toWatch );
+		var inlineEdit = this;
+
+		inlineEdit._$input = $input;
+		inlineEdit._$editing = null;
+		inlineEdit._inputBoxOffset = {
+			top:  -parseInt( $input.css('padding-top'),  10 ) - parseInt( $input.css('border-top-width'),  10 ),
+			left: -parseInt( $input.css('padding-left'), 10 ) - parseInt( $input.css('border-left-width'), 10 )
+		};
+
+		$input.hide();
+		$toWatch.on('click', '[data-inline-edit]', function(event) {
+			var $target = $(event.target);
+			var $editing = inlineEdit._$editing;
+
+			if ($editing && $target[0] === $editing[0]) {
+				return;
+			}
+			inlineEdit.edit( $target );
+			event.preventDefault();
+		});
+
+		$input.blur(function() {
+			inlineEdit.finishEdit();
+		}).keyup(function(event) {
+			if (event.keyCode === 13) {
+				$input[0].blur();
+				event.preventDefault();
+			}
+		});
+	}
+
+	var InlineEditProto = InlineEdit.prototype = new spriteCow.MicroEvent();
+
+	InlineEditProto.edit = function( $elm ) {
+		$elm = $($elm);
+
+		var position = $elm.position();
+
+		if (this._$editing) {
+			this.finishEdit();
+		}
+
+		this._$editing = $elm;
+		this._$input.show().css({
+			top: position.top + this._inputBoxOffset.top,
+			left: position.left + this._inputBoxOffset.left,
+			width: Math.max( $elm.width(), 50 )
+		}).val( $elm.text() ).focus();
+	};
+
+	InlineEditProto.finishEdit = function() {
+		if (!this._$editing) { return; }
+
+		var newVal = this._$input.hide().val();
+		var event = new $.Event( this._$editing.data('inlineEdit') );
+		
+		event.val = newVal;
+		this.trigger( event );
+		this._$editing = null;
+	};
+
+	spriteCow.InlineEdit = InlineEdit;
+})();
+
+// CssOutput
+spriteCow.CssOutput = (function() {
+	function pxVal(val, intVal) {
+		val = Math.round(val);
+		if (intVal)
+		{	
+			return val;
+		}
+
+		return val ? val + 'px' : '0';
+	}
+
+	function bgPercentVal(offset) {
+		if (offset) {
+			return round(offset * 100, 3) + '%';
+		}
+		return '0';
+	}
+
+	function round(num, afterDecimal) {
+		var multiplier = Math.pow(10, afterDecimal || 0);
+		return Math.round(num * multiplier) / multiplier;
+	}
+	
+	function CssOutput($appendTo) {
+		var $container = $('<div class="css-output"></div>').appendTo( $appendTo );
+		this._$container = $container;
+		this._$code = $('<code>\n\n\n\n\n</code>').appendTo( $container );
+		this.backgroundFileName = '';
+		this.path = 'cssOutputPath' in localStorage ? localStorage.getItem('cssOutputPath') : 'imgs/';
+		this.rect = new spriteCow.Rect(0, 0, 0, 0);
+		this.imgWidth = 0;
+		this.imgHeight = 0;
+		this.scaledWidth = 0;
+		this.scaledHeight = 0;
+		this.useTabs = true;
+		this.useBgUrl = true;
+		this.percentPos = false;
+		this.bgSize = false;
+		this.selector = '.sprite';
+		this._addEditEvents();
+		this.output = {};
+	}
+	
+	var CssOutputProto = CssOutput.prototype;
+	
+	CssOutputProto.update = function() {
+		var indent = this.useTabs ? '\t' : '    ';
+		var rect = this.rect;
+		var $code = this._$code;
+		var widthMultiplier = this.bgSize ? this.scaledWidth / this.imgWidth : 1;
+		var heightMultiplier = this.bgSize ? this.scaledHeight / this.imgHeight : 1;
+		var $file;
+		var backgroundUrl = $('#ImageUrl').val();
+		
+		$code.empty()
+			.append( $('<span class="selector"/>').text(this.selector) )
+			.append(' {\n');
+		
+		if (this.useBgUrl && this.backgroundFileName) {
+			$code.append( indent + "background: url('" );
+			$file = $('<span class="file"/>')
+				/*.append( $('<span data-inline-edit="file-path"/>').text( this.path ) )
+				.append( $('<span class="file-name"/>').text( this.backgroundFileName ) );*/
+				.append( $('<span class="file-name"/>').text( backgroundUrl ) );
+			
+			$code.append( $file ).append( "') no-repeat " );
+		}
+		else {
+			$code.append( indent + "background-position: " );
+		}
+
+		if (this.percentPos) {
+			$code.append(
+				'<span id="spriteX">' + bgPercentVal( rect.x / -(rect.width - this.imgWidth) ) + '</span> ' +
+				'<span id="spriteY">' + bgPercentVal( rect.y / -(rect.height - this.imgHeight) ) + '</span>;\n'
+			);
+		}
+		else {
+			$code.append(
+				'<span id="spriteX">' + pxVal(-rect.x * widthMultiplier) + '</span> ' +
+				'<span id="spriteY">' + pxVal(-rect.y * heightMultiplier) + '</span>;\n'
+			);
+		}
+
+		if (this.bgSize) {
+			$code.append(
+				indent + 'background-size: ' +
+				pxVal(this.scaledWidth) + ' ' +
+				pxVal(this.scaledHeight) + ';\n'
+			);
+		}
+		
+		$code.append(
+			indent + 'width: <span id="spriteWidth">' + pxVal(rect.width * widthMultiplier) + '</span>;\n' +
+			indent + 'height: <span id="spriteHeight">' + pxVal(rect.height * heightMultiplier) + '</span>;\n' +
+			'}'
+		);
+
+		$.extend(this.output,
+		{
+			width: pxVal(rect.width * widthMultiplier, true),
+			height: pxVal(rect.height * heightMultiplier, true),
+			x: pxVal(-rect.x * widthMultiplier, true),
+			y: pxVal(-rect.y * heightMultiplier, true)
+		});
+	};
+	
+	CssOutputProto._addEditEvents = function() {
+		var cssOutput = this;
+
+		new spriteCow.InlineEdit( cssOutput._$container ).bind('file-path', function(event) {
+			var newVal = event.val;
+			cssOutput.path = newVal;
+			cssOutput.update();
+			localStorage.setItem('cssOutputPath', newVal);
+		});
+	};
+	
+	return CssOutput;
+})();
+
+// Toolbar
+spriteCow.Toolbar = (function() {
+	function SpriteCowToolbar($appendToElm) {
+		var toolbar = this,
+			$container = $('' +
+				'<div class="toolbar">' +
+					'<span class="feedback"></span>' +
+				'</div>' +
+			'').appendTo( $appendToElm );
+		
+		$container.on('mouseenter', 'div[role=button]', function() {
+			var $button = $(this);
+			toolbar.feedback( $button.hasClass('no-label') ? $button.text() : '' );
+		});
+
+		$container.on('click', 'div[role=button]', function() {
+			var $button = $(this),
+				toolName = $button.data('toolName'),
+				event = new $.Event( toolName );
+			
+			event.isActive = $button.hasClass('active');
+
+			if ( !toolbar.trigger(event).isDefaultPrevented() ) {
+				if (event.isActive) {
+					toolbar.deactivate(toolName);
+				}
+				else {
+					toolbar.activate(toolName);
+				}
+			}
+
+			event.preventDefault();
+		});
+		
+		toolbar.$container = $container;
+		toolbar._$feedback = $container.find('span.feedback');
+	}
+	
+	SpriteCowToolbar.createButton = function(toolName, text, opts) {
+		opts = opts || {};
+
+		var $button = $('<div role="button"/>').addClass(toolName).text(text).data('toolName', toolName);
+
+		if (opts.noLabel) {
+			$button.addClass('no-label');
+		}
+		if (opts.active) {
+			$button.addClass('active');
+		}
+
+		return $button;
+	};
+
+	var SpriteCowToolbarProto = SpriteCowToolbar.prototype = new spriteCow.MicroEvent();
+	
+	SpriteCowToolbarProto.addItem = function(toolName, text, opts) {
+		if (toolName instanceof spriteCow.ToolbarGroup) {
+			this._$feedback.before( toolName.$container );
+		}
+		else {
+			SpriteCowToolbar.createButton(toolName, text, opts).insertBefore( this._$feedback );
+		}
+
+		return this;
+	};
+
+	SpriteCowToolbarProto.feedback = function(msg, severe) {
+		var $feedback = this._$feedback,
+			initialColor = '#555';
+		
+		// opacity 0.999 to avoid antialiasing differences when 1
+		$feedback.transitionStop(true).text(msg).css({
+			opacity: 0.999,
+			color: initialColor,
+			'font-weight': 'normal'
+		});
+		
+		if (severe) {
+			$feedback.css('font-weight', 'bold');
+			
+			if ($.support.transition) {
+				$feedback.transition({ color: 'red' }, {
+					duration: 3000
+				});
+			}
+			else {
+				$feedback.css('color', 'red');
+			}
+		}
+		else {
+			$feedback.animate({
+				// should be using delay() here, but http://bugs.jquery.com/ticket/6150 makes it not work
+				// need to specify a dummy property to animate, cuh!
+				_:0
+			}, 3000);
+		}
+		
+		$feedback.transition({ opacity: 0 }, {
+			duration: 2000
+		});
+		
+		return this;
+	};
+	
+	SpriteCowToolbarProto.activate = function(toolName) {
+		var $button = this.$container.find('.' + toolName + '[role=button]');
+		$button.closest('.toolbar-group').children().removeClass('active');
+		$button.addClass('active');
+		return this;
+	};
+	
+	SpriteCowToolbarProto.deactivate = function(toolName) {
+		this.$container.find('.' + toolName + '[role=button]').removeClass('active');
+		return this;
+	};
+	
+	SpriteCowToolbarProto.isActive = function(toolName) {
+		return this.$container.find('.' + toolName + '[role=button]').hasClass('active');
+	};
+	
+	return SpriteCowToolbar;
+})();
+	
+(function() {
+	function ToolbarGroup() {
+		this.$container = $('<div class="toolbar-group"/>');
+	}
+
+	var ToolbarGroupProto = ToolbarGroup.prototype;
+
+	ToolbarGroupProto.addItem = function(toolName, text, opts) {
+		spriteCow.Toolbar.createButton(toolName, text, opts).appendTo( this.$container );
+		return this;
+	};
+
+	spriteCow.ToolbarGroup = ToolbarGroup;
+})();
+
+// pageLayout
+spriteCow.pageLayout = (function() {
+	var $container = $('.container'),
+		$canvasCell = $('.canvas-cell'),
+		$canvasInner = $('.canvas-inner'),
+		$cssOutput,
+		$startButtons,
+		$spriteCanvasContainer,
+		$window = $(window),
+		$toolbarTop,
+		$toolbarBottom,
+		currentView = 'intro';
+	
+	function getContainerWidthPercent() {
+		var bodyHorizontalPadding = 40,
+			containerRelativeWidth = $container.width() / ( $window.width() - bodyHorizontalPadding );
+		
+		return Math.round(containerRelativeWidth * 10000) / 100 + '%';
+	}
+	
+	function getAppViewTransitions() {
+		// Here we read all the destination styles to animate to when the intro class is removed
+		var transitions,
+			containerWidth = getContainerWidthPercent();
+		
+		$container.removeClass('intro');
+		
+		transitions = [
+			{
+				duration: 300,
+				easing: 'easeInOutQuad',
+				targets: [
+					[$container, { width: '100%' }],
+					[$startButtons, { opacity: 0 }]
+				],
+				before: function() {
+					$container.width(containerWidth);
+					// stops browser reverting to previous scroll position
+					$canvasInner.scrollTop(0);
+				}
+			},
+			{
+				duration: 500,
+				easing: 'easeInOutQuad',
+				targets: [
+					[$container, { width: '100%' }],
+					[$cssOutput, {
+						height: $cssOutput.height(),
+						'padding-top': $cssOutput.css('padding-top'),
+						'padding-bottom': $cssOutput.css('padding-bottom')
+					}],
+					[$canvasCell, {
+						height: $canvasCell.height()
+					}],
+					[$toolbarTop, {
+						height: $toolbarTop.height(),
+						'padding-top': $toolbarTop.css('padding-top'),
+						'padding-bottom': $toolbarTop.css('padding-bottom'),
+						'border-top-width': $toolbarTop.css('border-top-width'),
+						'border-bottom-width': $toolbarTop.css('border-bottom-width')
+					}],
+					[$toolbarBottom, {
+						height: $toolbarBottom.height(),
+						'padding-top': $toolbarBottom.css('padding-top'),
+						'padding-bottom': $toolbarBottom.css('padding-bottom'),
+						'border-top-width': $toolbarBottom.css('border-top-width'),
+						'border-bottom-width': $toolbarBottom.css('border-bottom-width')
+					}]
+				],
+				before: function() {
+				}
+			},
+			{
+				duration: 500,
+				easing: 'swing',
+				targets: [
+					[$spriteCanvasContainer, {opacity: 1}]
+				]
+			}
+		];
+		
+		$container.addClass('intro');
+		
+		return transitions;
+	}
+	
+	function doAnimStep(steps, i, callback) {
+		var nextStep = steps[i+1],
+			step = steps[i],
+			duration = step.duration,
+			easing = step.easing;
+		
+		function complete() {
+			if (nextStep) {
+				doAnimStep(steps, i + 1, callback);
+			}
+			else {
+				callback();
+			}
+		}
+		
+		if (step.before) {
+			step.before();
+		}
+		
+		step.targets.forEach(function(target, i, targets) {
+			target[0].transition(target[1], {
+				duration: duration,
+				easing: easing,
+				complete: i ? $.noop : complete
+			});
+		});
+	}
+	
+	return {
+		init: function() {
+			$toolbarTop = $('.toolbar.top');
+			$toolbarBottom = $('.toolbar.bottom');
+			$startButtons = $('.start-buttons');
+			$cssOutput = $('.css-output');
+			$spriteCanvasContainer = $('.sprite-canvas-container');
+		},
+		toAppView: function() {
+			if (currentView === 'app') { return; }
+			
+			var steps = getAppViewTransitions(),
+				i = 0;
+				
+			currentView = 'app';
+
+			if ($.support.transition) {
+				doAnimStep(steps, 0, function() {
+					var targets = [];
+					
+					$container.removeClass('intro');
+					
+					steps.forEach(function(step) {
+						targets = targets.concat( step.targets );
+					});
+					
+					targets.forEach(function(target) {
+						for ( var propName in target[1] ) {
+							target[0].css(propName, '');
+						}
+					});
+				});
+			}
+			else {
+				$container.removeClass('intro');
+			}
+
+		}
+	};
+})();
+
+// FeatureTest
+spriteCow.FeatureTest = (function() {
+	function FeatureTest($appendTo) {
+		var $container = $('<div class="feature-test-results" />'),
+			$results = $('<ul/>');
+		
+		this._$container = $container.appendTo($appendTo);
+		this._$results = $results.appendTo($container);
+		this.allPassed = true;
+	}
+	
+	var FeatureTestProto = FeatureTest.prototype;
+	
+	FeatureTestProto.addResult = function(pass, msg) {
+		this.allPassed = this.allPassed && pass;
+		
+		$('<li/>').text(msg).prepend( pass ? '<span class="pass">pass</span> ' : '<span class="fail">fail</span> ' )
+			.appendTo( this._$results );
+	};
+	
+	return FeatureTest;
+})();
+
+// featureTests
+spriteCow.featureTests = (function(document) {
+	var testElm = document.createElement('a'),
+		docElm = document.documentElement;
+	
+	function canvas() {
+		return !!document.createElement('canvas').getContext;
+	}
+	function fileApi() {
+		return !!( window.File && window.FileReader );
+	}
+	function w3EventListeners() {
+		return !!testElm.addEventListener;
+	}
+	
+	var featureTests = new spriteCow.FeatureTest( $('.feature-test') );
+	
+	featureTests.addResult( canvas(), '<canvas> element' );
+	featureTests.addResult( fileApi(), 'File & FileReader' );
+	featureTests.addResult( w3EventListeners(), 'addEventListener on elements' );
+	
+	if ($.browser.opera) { // I feel dirty, need these for some CSS tweaks
+		docElm.className += ' opera';	
+	}
+	
+	return featureTests;
+})(document);
+
+
+spriteCow.XenForoSmiley = (function() {
+	i = 1;
+
+	function XenForoSmiley(cssOutput) {
+		$.extend(cssOutput,
+		{
+			key: i
+		});
+		XenForo.SmileySpriteCow.add(cssOutput);
+		/*XenForo.ajax('admin.php?smilies/bulk-add', 
+			cssOutput, 
+			function(ajaxData) {
+				if (XenForo.hasResponseError(ajaxData))
+				{
+					return false;
+				}
+
+				new XenForo.ExtLoader(ajaxData, function(data) {
+					$(data.templateHtml).appendTo('.SmileyList');
+				});
+			}
+		);
+		$smiley = $('<tr>' +
+			'<td class="center">' + 
+				'<img src="styles/default/xenforo/clear.png" style="width: {$smilie.sprite_params.w}px;height: {$smilie.sprite_params.h}px;' +
+				'background: url(' + dataSource + ') no-repeat {$smilie.sprite_params.x}px {$smilie.sprite_params.y}px;" />' +
+			'</td>' +
+			'<td class="title center">' +
+				'<input type="textbox" name="smilies[' + i + '][title]" value="" class="textCtrl Elastic" />' +
+			'</td>' +
+			'<td class="text center"><textarea name="smilies[' + i + '][smilie_text]" class="textCtrl Elastic"></textarea></td>' +
+			'<td class="text center"></td>' +
+			'<td class="integer center">' +
+				'<input type="number" name="smilies[' + i + '][smilie_display_order]" value="' + i + '" class="textCtrl SpinBox number autoSize" size="10" min="1" step="1" />' +
+			'</td>' +
+			'<td class="ctrlUnit">' +					
+				'<a class="optionEditLink inputSupplementary SmileyMod"><span class="editText delete">{xen:phrase delete}</span></a>' +
+			'</td>' +
+			'</tr>').appendTo('.SmileyList');*/
+		i++;
+	}
+	
+	//var XenForoSmileyProto = XenForoSmiley.prototype;
+	
+	return XenForoSmiley;
+})();
+

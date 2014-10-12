@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.2.0" version_id="48" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
+<addon addon_id="SmileyManager" title="Smiley Manager" version_string="2.2.1" version_id="49" url="" install_callback_class="Milano_SmileyManager_Install" install_callback_method="install" uninstall_callback_class="Milano_SmileyManager_Install" uninstall_callback_method="uninstall">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -629,11 +629,12 @@ $0]]></replace>
   <code_event_listeners>
     <listener event_id="editor_setup" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="editorSetup" active="1" hint="" description=""/>
     <listener event_id="init_dependencies" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="initDependencies" active="1" hint="" description=""/>
-    <listener event_id="load_class_bb_code" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadBbCodeBase" active="1" hint="XenForo_BbCode_Formatter_Base" description=""/>
+    <listener event_id="load_class_bb_code" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadBbCodeBase" active="0" hint="XenForo_BbCode_Formatter_Base" description=""/>
     <listener event_id="load_class_controller" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadSmilieControllerAdmin" active="1" hint="XenForo_ControllerAdmin_Smilie" description=""/>
     <listener event_id="load_class_controller" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadAccountController" active="1" hint="XenForo_ControllerPublic_Account" description=""/>
     <listener event_id="load_class_datawriter" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="loadUserDataWriter" active="1" hint="XenForo_DataWriter_User" description=""/>
     <listener event_id="template_create" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="templateEditorCreate" active="1" hint="editor" description=""/>
+    <listener event_id="template_create" execute_order="10" callback_class="Milano_SmileyManager_Listener" callback_method="templatePageContainterCreate" active="1" hint="PAGE_CONTAINER" description=""/>
   </code_event_listeners>
   <cron/>
   <email_templates/>

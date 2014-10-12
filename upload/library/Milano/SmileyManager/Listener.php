@@ -29,11 +29,19 @@ class Milano_SmileyManager_Listener
         );
     }
 
-	public static function templateEditorCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
+    public static function templateEditorCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
     {        
         if (self::_assertQuickloadSmileyEnabled())
+        {   
+            $template->addRequiredExternal('js', 'js/Milano/SmileyManager/editor.js');
+        }
+    }
+
+	public static function templatePageContainterCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
+    {        
+        if ($template instanceof XenForo_Template_Public)
         {	
-        	$template->addRequiredExternal('js', 'js/Milano/SmileyManager/editor.js');
+        	$template->addRequiredExternal('js', 'js/Milano/SmileyManager/parser.js');
         }
     }
 

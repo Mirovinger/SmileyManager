@@ -6,6 +6,8 @@ class Milano_SmileyManager_Helper_Smilie
 	{
 		$formatter = XenForo_BbCode_Formatter_Base::create('Base');
 
-		return $formatter->replaceSmiliesInText($string);
+		$string = "<span class=\"SmileyParser\">{$string}</span>";
+		
+        return $formatter->replaceSmiliesInText($string, array('self', 'smiliesEscapeCallback'));
 	}
-}
+}    

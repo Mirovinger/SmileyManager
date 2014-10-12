@@ -38,10 +38,10 @@
 				).
 				addItem('invert-bg', XenForo.phrases.toggle_dark_background, {noLabel: true});
 
-			toolbarBottom.
+			/*toolbarBottom.
 				addItem('auto-resize', 'Auto resize', {active: true, noLabel: true}).
 				addItem('lock-height', 'Lock-on height', {noLabel: true}).
-				addItem('lock-width', 'Lock-on width', {noLabel: true});
+				addItem('lock-width', 'Lock-on width', {noLabel: true});*/
 
 			toolbarTop.$container.addClass('top');
 			toolbarBottom.$container.addClass('bottom');
